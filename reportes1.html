@@ -240,8 +240,21 @@
 
         async function actualizar(id) {
             const btn = event.currentTarget;
-            const estatus = document.getElementById(`sel-${id}`).value;
-            const prioridad = document.getElementById(`prio-${id}`).value;
+            
+            // Limpiar ID: quitar "AG-" si existe para acceder a los elementos del DOM
+            const idLimpio = id.toString().replace('AG-', '');
+            
+            const estatusElement = document.getElementById(`sel-${idLimpio}`);
+            const prioridadElement = document.getElementById(`prio-${idLimpio}`);
+            
+            if (!estatusElement || !prioridadElement) {
+                console.error('No se encontraron los elementos para el ID:', id);
+                alert('Error: No se pudieron cargar los campos del reporte');
+                return;
+            }
+            
+            const estatus = estatusElement.value;
+            const prioridad = prioridadElement.value;
             
             // Obtener usuario de la sesión para AuditLog
             const session = JSON.parse(localStorage.getItem('user_session') || 'null');
@@ -253,7 +266,7 @@
                     method: 'POST',
                     body: JSON.stringify({ 
                         action: 'updateStatus', 
-                        id, 
+                        id,  // Enviar ID completo al script
                         estatus, 
                         prioridad,
                         usuario  // Enviado para AuditLog
