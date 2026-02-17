@@ -312,12 +312,6 @@
                 btn.disabled = false;
             }
         }
-                document.getElementById(`status-${id}`).innerText = estatus;
-                btn.innerHTML = 'SAVE';
-                btn.classList.replace('bg-blue-900', 'bg-green-600');
-                setTimeout(() => btn.classList.replace('bg-green-600', 'bg-blue-900'), 2000);
-            } catch (e) { alert("Error"); btn.innerHTML = 'SAVE'; }
-        }
 
         function filtrar(val) {
             document.querySelectorAll('.reporte-fila').forEach(tr => {
