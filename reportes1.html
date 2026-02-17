@@ -113,7 +113,7 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwf6zkn7u0PO3t9TPkVG2NjoDwRF7-BuSAtP4T0PXaDStulKQBJOXqzWFwm5Nqh6LP-jA/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwgCPHD049p8E6Bns4LcFnPLP1HlDTOCDWHUj7Zt_XYAT0QWxtrUEe0jv75rTxwMKU6/exec";
 
         function toggleMobileMenu() {
             const sidebar = document.getElementById('sidebar');
@@ -261,8 +261,10 @@
             const usuario = session ? session.email : 'Desconocido';
             
             btn.innerHTML = '<i class="fas fa-sync fa-spin"></i>';
+            btn.disabled = true;
+            
             try {
-                await fetch(SCRIPT_URL, {
+                const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     body: JSON.stringify({ 
                         action: 'updateStatus', 
@@ -272,6 +274,44 @@
                         usuario  // Enviado para AuditLog
                     })
                 });
+                
+                // Verificar que la respuesta sea OK
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                // Verificar el resultado
+                if (data.result === 'success') {
+                    // Actualizar el display del estatus
+                    const statusDisplay = document.getElementById(`status-${idLimpio}`);
+                    if (statusDisplay) {
+                        statusDisplay.innerText = estatus;
+                    }
+                    
+                    // Cambiar botón a verde temporalmente
+                    btn.innerHTML = '<i class="fas fa-check"></i>';
+                    btn.classList.remove('bg-blue-900');
+                    btn.classList.add('bg-green-600');
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = 'SAVE';
+                        btn.classList.remove('bg-green-600');
+                        btn.classList.add('bg-blue-900');
+                        btn.disabled = false;
+                    }, 2000);
+                } else {
+                    throw new Error(data.message || 'Error desconocido');
+                }
+                
+            } catch (error) {
+                console.error('Error al actualizar:', error);
+                alert('Error al actualizar el reporte. Por favor, intenta de nuevo.');
+                btn.innerHTML = 'SAVE';
+                btn.disabled = false;
+            }
+        }
                 document.getElementById(`status-${id}`).innerText = estatus;
                 btn.innerHTML = 'SAVE';
                 btn.classList.replace('bg-blue-900', 'bg-green-600');
