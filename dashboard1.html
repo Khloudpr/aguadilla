@@ -2,295 +2,421 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Aguadilla Command Center | Intelligence</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aguadilla Intelligence Hub - Ultimate Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
-        .sidebar-link { font-size: 0.85rem; letter-spacing: 0.05em; font-weight: 800; }
-        .stat-value { letter-spacing: -2px; }
-        body { background: #f1f5f9; background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 30px 30px; }
-        .btn-logout { transition: all 0.3s ease; }
-        .btn-logout:hover { background-color: #dc2626; transform: translateX(5px); }
+        .glass-card{background:rgba(255,255,255,0.9);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.2);transition:all 0.3s}
+        .glass-card:hover{transform:translateY(-5px);box-shadow:0 20px 25px -5px rgba(0,0,0,0.1)}
+        .sidebar-link{font-size:0.85rem;letter-spacing:0.05em;font-weight:800}
+        .stat-value{letter-spacing:-2px}
+        body{background:#f1f5f9;background-image:radial-gradient(#cbd5e1 1px,transparent 1px);background-size:30px 30px}
+        .btn-logout{transition:all 0.3s}
+        .btn-logout:hover{background-color:#dc2626;transform:translateX(5px)}
+        .trend-up{color:#22c55e}
+        .trend-down{color:#ef4444}
+        .filter-btn{transition:all 0.2s}
+        .filter-btn.active{background-color:#1e3a8a;color:white;transform:scale(1.05)}
+        .modal{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.7);align-items:center;justify-content:center}
+        .modal.active{display:flex}
+        .modal-content{background:white;border-radius:2rem;max-width:800px;width:90%;max-height:90vh;overflow-y:auto;animation:slideUp 0.3s}
+        @keyframes slideUp{from{opacity:0;transform:translateY(50px)}to{opacity:1;transform:translateY(0)}}
+        .command-palette{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.8);align-items:flex-start;justify-content:center;padding-top:15vh}
+        .command-palette.active{display:flex}
+        .notification-badge{position:absolute;top:-5px;right:-5px;background:#ef4444;color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold}
+        .notification-panel{display:none;position:absolute;top:100%;right:0;margin-top:10px;background:white;border-radius:1rem;box-shadow:0 10px 25px rgba(0,0,0,0.2);width:350px;max-height:400px;overflow-y:auto;z-index:50}
+        .notification-panel.active{display:block}
+        .quick-actions{position:fixed;bottom:30px;right:30px;z-index:50;display:flex;gap:10px}
+        .quick-btn{width:56px;height:56px;border-radius:50%;background:#1e3a8a;color:white;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(30,58,138,0.4);cursor:pointer;transition:all 0.3s}
+        .quick-btn:hover{transform:scale(1.1);box-shadow:0 6px 20px rgba(30,58,138,0.6)}
+        body.focus-mode .sidebar,body.focus-mode .quick-actions,body.focus-mode header{opacity:0.3;pointer-events:none}
+        .breadcrumb{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em}
+        .breadcrumb a{color:#64748b;transition:color 0.2s}
+        .breadcrumb a:hover{color:#1e3a8a}
+        .breadcrumb .current{color:#1e3a8a}
     </style>
 </head>
 <body class="font-sans text-slate-900">
 
-    <!-- Mobile Menu Button (solo visible en móvil) -->
-    <button onclick="toggleMobileMenu()" class="md:hidden fixed top-4 left-4 z-50 bg-blue-900 text-white p-3 rounded-xl shadow-lg">
-        <i class="fas fa-bars text-xl"></i>
-    </button>
+<!-- Shortcuts Help Modal -->
+<div id="shortcuts-help" class="modal">
+    <div class="modal-content p-8">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-black">⌨️ Atajos de Teclado</h2>
+            <button onclick="closeShortcuts()" class="text-2xl text-slate-400 hover:text-slate-900">&times;</button>
+        </div>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+            <div class="flex justify-between items-center"><kbd class="bg-slate-100 px-3 py-2 rounded font-mono">G</kbd><span class="ml-4">Ir a Dashboard</span></div>
+            <div class="flex justify-between items-center"><kbd class="bg-slate-100 px-3 py-2 rounded font-mono">R</kbd><span class="ml-4">Ir a Reportes</span></div>
+            <div class="flex justify-between items-center"><kbd class="bg-slate-100 px-3 py-2 rounded font-mono">M</kbd><span class="ml-4">Ir a Mapa</span></div>
+            <div class="flex justify-between items-center"><kbd class="bg-slate-100 px-3 py-2 rounded font-mono">/</kbd><span class="ml-4">Búsqueda rápida</span></div>
+            <div class="flex justify-between items-center"><kbd class="bg-slate-100 px-3 py-2 rounded font-mono">F</kbd><span class="ml-4">Modo Focus</span></div>
+            <div class="flex justify-between items-center"><kbd class="bg-slate-100 px-3 py-2 rounded font-mono">E</kbd><span class="ml-4">Exportar datos</span></div>
+            <div class="flex justify-between items-center"><kbd class="bg-slate-100 px-3 py-2 rounded font-mono">?</kbd><span class="ml-4">Ver atajos</span></div>
+            <div class="flex justify-between items-center"><kbd class="bg-slate-100 px-3 py-2 rounded font-mono">ESC</kbd><span class="ml-4">Cerrar modal</span></div>
+        </div>
+    </div>
+</div>
 
-    <!-- Mobile Overlay -->
-    <div id="mobile-overlay" onclick="toggleMobileMenu()" class="md:hidden fixed inset-0 bg-black/50 z-40 opacity-0 pointer-events-none transition-opacity"></div>
+<!-- Command Palette -->
+<div id="command-palette" class="command-palette">
+    <div class="w-full max-w-2xl px-4">
+        <input type="text" id="command-input" placeholder="🔍 Buscar reportes, acciones rápidas..." class="w-full px-6 py-4 rounded-2xl text-lg font-bold border-4 border-blue-900 outline-none" autocomplete="off">
+        <div id="command-results" class="bg-white mt-2 rounded-2xl shadow-2xl max-h-96 overflow-y-auto"></div>
+    </div>
+</div>
 
-    <div class="flex min-h-screen">
-        <!-- Sidebar Desktop + Mobile -->
-        <aside id="sidebar" class="w-72 bg-blue-900 text-white p-8 flex flex-col fixed md:sticky top-0 h-screen shadow-2xl z-40 -translate-x-full md:translate-x-0 transition-transform duration-300">
-            <!-- Close button (solo móvil) -->
-            <button onclick="toggleMobileMenu()" class="md:hidden absolute top-4 right-4 text-white text-2xl">
-                <i class="fas fa-times"></i>
-            </button>
-
-            <div class="flex items-center gap-3 mb-12">
-                <div class="bg-white text-blue-900 p-1.5 rounded-lg font-black text-xl shadow-lg">AR</div>
-                <span class="font-black text-xl uppercase italic tracking-tighter">Aguadilla</span>
+<!-- Detail Modal -->
+<div id="detail-modal" class="modal">
+    <div class="modal-content">
+        <div class="p-8">
+            <div class="flex justify-between items-start mb-6">
+                <div class="flex-1">
+                    <div class="breadcrumb mb-2">
+                        <a href="#" onclick="closeModal();return false;">Dashboard</a>
+                        <i class="fas fa-chevron-right text-[10px]"></i>
+                        <span class="current">Detalle de Reporte</span>
+                    </div>
+                    <h2 id="modal-title" class="text-3xl font-black text-blue-900 italic"></h2>
+                </div>
+                <button onclick="closeModal()" class="text-3xl text-slate-400 hover:text-slate-900 ml-4">&times;</button>
             </div>
-            <nav class="space-y-6 flex-1">
-                <a href="dashboard1.html" class="sidebar-link flex items-center gap-4 bg-blue-800 p-4 rounded-2xl shadow-xl"><i class="fas fa-chart-pie w-6 text-lg"></i> DASHBOARD</a>
-                <a href="reportes1.html" class="sidebar-link flex items-center gap-4 opacity-70 hover:opacity-100 transition-all p-2"><i class="fas fa-clipboard-list w-6 text-lg"></i> REPORTES</a>
-                <a href="mapa1.html" class="sidebar-link flex items-center gap-4 opacity-70 hover:opacity-100 transition-all p-2"><i class="fas fa-map-marked-alt w-6 text-lg"></i> MAPA</a>
-            </nav>
-            
-            <!-- User Info & Logout Section -->
-            <div class="border-t border-blue-800 pt-6 space-y-4">
-                <div class="bg-blue-800/50 rounded-2xl p-4">
-                    <div class="flex items-center gap-3 mb-2">
-                        <div class="bg-blue-700 w-10 h-10 rounded-full flex items-center justify-center">
-                            <i class="fas fa-user text-white"></i>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-xs font-black text-white truncate" id="user-name">Empleado</p>
-                            <p class="text-[9px] text-blue-300 truncate" id="user-email">email@aguadilla.com</p>
-                        </div>
+            <div id="modal-content" class="space-y-6"></div>
+            <div class="flex gap-3 mt-8">
+                <button onclick="goToReportes()" class="flex-1 bg-blue-900 text-white py-3 rounded-xl font-black uppercase text-sm hover:bg-blue-800 transition">
+                    <i class="fas fa-external-link-alt mr-2"></i>Ver en Reportes
+                </button>
+                <button onclick="closeModal()" class="px-6 bg-slate-100 text-slate-600 py-3 rounded-xl font-black uppercase text-sm hover:bg-slate-200 transition">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Menu Button -->
+<button onclick="toggleMobileMenu()" class="md:hidden fixed top-4 left-4 z-50 bg-blue-900 text-white p-3 rounded-xl shadow-lg">
+    <i class="fas fa-bars text-xl"></i>
+</button>
+
+<!-- Mobile Overlay -->
+<div id="mobile-overlay" onclick="toggleMobileMenu()" class="md:hidden fixed inset-0 bg-black/50 z-40 opacity-0 pointer-events-none transition-opacity"></div>
+
+<div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-72 bg-blue-900 text-white p-8 flex flex-col fixed md:sticky top-0 h-screen shadow-2xl z-40 -translate-x-full md:translate-x-0 transition-transform duration-300">
+        <button onclick="toggleMobileMenu()" class="md:hidden absolute top-4 right-4 text-white text-2xl"><i class="fas fa-times"></i></button>
+
+        <div class="flex items-center gap-3 mb-12">
+            <div class="bg-white text-blue-900 p-1.5 rounded-lg font-black text-xl shadow-lg">AR</div>
+            <span class="font-black text-xl uppercase italic tracking-tighter">Aguadilla</span>
+        </div>
+        
+        <nav class="space-y-6 flex-1">
+            <a href="dashboard1.html" class="sidebar-link flex items-center gap-4 bg-blue-800 p-4 rounded-2xl shadow-xl">
+                <i class="fas fa-chart-pie w-6 text-lg"></i> DASHBOARD
+                <kbd class="ml-auto text-[9px] bg-blue-700 px-2 py-1 rounded">G</kbd>
+            </a>
+            <a href="reportes1.html" class="sidebar-link flex items-center gap-4 opacity-70 hover:opacity-100 transition-all p-2">
+                <i class="fas fa-clipboard-list w-6 text-lg"></i> REPORTES
+                <kbd class="ml-auto text-[9px] bg-blue-800 px-2 py-1 rounded opacity-50">R</kbd>
+            </a>
+            <a href="mapa1.html" class="sidebar-link flex items-center gap-4 opacity-70 hover:opacity-100 transition-all p-2">
+                <i class="fas fa-map-marked-alt w-6 text-lg"></i> MAPA
+                <kbd class="ml-auto text-[9px] bg-blue-800 px-2 py-1 rounded opacity-50">M</kbd>
+            </a>
+        </nav>
+
+        <!-- Recent Activity -->
+        <div class="mb-6 p-4 bg-blue-800/30 rounded-xl">
+            <h4 class="text-[9px] font-black uppercase tracking-widest mb-3 text-blue-300">📌 Última Actividad</h4>
+            <div id="recent-activity" class="space-y-2 text-xs"></div>
+        </div>
+        
+        <!-- User Info -->
+        <div class="border-t border-blue-800 pt-6 space-y-4">
+            <div class="bg-blue-800/50 rounded-2xl p-4">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="bg-blue-700 w-10 h-10 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs font-black text-white truncate" id="user-name">Empleado</p>
+                        <p class="text-[9px] text-blue-300 truncate" id="user-email">email@aguadilla.com</p>
                     </div>
                 </div>
-                
-                <button onclick="cerrarSesion()" class="btn-logout w-full bg-red-600 hover:bg-red-700 text-white p-3 rounded-2xl shadow-lg flex items-center justify-center gap-2 font-black text-sm uppercase tracking-wider">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Cerrar Sesión
-                </button>
             </div>
             
-            <div class="pt-4 text-[10px] font-black text-blue-400 uppercase tracking-widest italic text-center">
-                GovTech Solutions v4.0
-            </div>
-        </aside>
+            <button onclick="cerrarSesion()" class="btn-logout w-full bg-red-600 hover:bg-red-700 text-white p-3 rounded-2xl shadow-lg flex items-center justify-center gap-2 font-black text-sm uppercase tracking-wider">
+                <i class="fas fa-sign-out-alt"></i>Cerrar Sesión
+            </button>
+        </div>
+        
+        <div class="pt-4 text-[10px] font-black text-blue-400 uppercase tracking-widest italic text-center">Ultimate Edition v1.0</div>
+    </aside>
 
-        <main class="flex-1 p-4 md:p-10 w-full">
-            <header class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+    <main class="flex-1 p-4 md:p-10 w-full">
+        <!-- Header -->
+        <header class="mb-6">
+            <div class="breadcrumb mb-4">
+                <i class="fas fa-home text-blue-900"></i>
+                <span class="current">Dashboard</span>
+            </div>
+
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-4">
                 <div>
                     <h1 class="text-3xl md:text-5xl font-black text-slate-800 tracking-tighter italic uppercase leading-none">Intelligence Hub</h1>
-                    <p class="text-blue-600 font-black text-xs mt-2 uppercase tracking-[0.3em]">Gestión de Infraestructura Crítica</p>
+                    <p class="text-blue-600 font-black text-xs mt-2 uppercase tracking-[0.3em]">Executive Dashboard</p>
                 </div>
-                <div class="flex gap-3">
+                
+                <div class="flex gap-2 flex-wrap items-center">
+                    <!-- Notifications -->
+                    <div class="relative">
+                        <button onclick="toggleNotifications()" class="bg-white text-slate-700 p-3 rounded-xl shadow-md hover:shadow-lg transition-all relative">
+                            <i class="fas fa-bell"></i>
+                            <span id="notif-badge" class="notification-badge" style="display:none">0</span>
+                        </button>
+                        <div id="notification-panel" class="notification-panel">
+                            <div class="p-4 border-b"><h3 class="font-black text-sm">🔔 Notificaciones</h3></div>
+                            <div id="notification-list" class="p-2"></div>
+                        </div>
+                    </div>
+
+                    <button onclick="toggleFocusMode()" class="bg-white text-slate-700 px-4 py-2 rounded-xl shadow-md hover:shadow-lg transition-all text-xs font-black uppercase" title="Modo Focus (F)">
+                        <i class="fas fa-eye mr-2"></i><span class="hidden sm:inline">Focus</span>
+                    </button>
+                    
+                    <button onclick="exportarReporte()" class="bg-white text-slate-700 px-4 py-2 rounded-xl shadow-md hover:shadow-lg transition-all text-xs font-black uppercase" title="Exportar (E)">
+                        <i class="fas fa-download mr-2"></i><span class="hidden sm:inline">Exportar</span>
+                    </button>
+                    
                     <div class="bg-white px-4 py-2 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-3">
                         <span class="w-2 h-2 bg-green-500 rounded-full animate-ping"></span>
-                        <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest" id="last-sync">Live Data</span>
+                        <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest" id="last-sync">Live</span>
                     </div>
-                    <button onclick="fetchDashboardData()" class="bg-blue-900 text-white p-3 rounded-2xl shadow-lg hover:bg-blue-800 transition-all">
-                        <i class="fas fa-sync-alt"></i>
+                    
+                    <button onclick="fetchDashboardData()" class="bg-blue-900 text-white px-4 py-2 rounded-xl shadow-lg hover:bg-blue-800 transition-all text-xs font-black uppercase">
+                        <i class="fas fa-sync-alt mr-2" id="sync-icon"></i><span class="hidden sm:inline">Refrescar</span>
                     </button>
                 </div>
-            </header>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                <div class="glass-card p-6 rounded-[2.5rem] shadow-sm">
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Reportes</p>
-                    <div class="flex items-end gap-2">
-                        <h2 id="kpi-total" class="text-5xl font-black text-slate-800 stat-value">0</h2>
-                        <span class="text-green-500 font-bold text-xs mb-2">+12%</span>
-                    </div>
-                </div>
-                <div class="glass-card p-6 rounded-[2.5rem] shadow-sm border-b-4 border-green-500">
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Eficiencia de Resolución</p>
-                    <div class="flex items-end gap-2">
-                        <h2 id="kpi-eficiencia" class="text-5xl font-black text-green-600 stat-value">0%</h2>
-                    </div>
-                </div>
-                <div class="glass-card p-6 rounded-[2.5rem] shadow-sm border-b-4 border-blue-500">
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">En Revisión Técnica</p>
-                    <div class="flex items-end gap-2">
-                        <h2 id="kpi-revision" class="text-5xl font-black text-blue-600 stat-value">0</h2>
-                    </div>
-                </div>
-                <div class="glass-card p-6 rounded-[2.5rem] shadow-sm bg-slate-900">
-                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Alertas Críticas</p>
-                    <div class="flex items-end gap-2">
-                        <h2 id="kpi-urgentes" class="text-5xl font-black text-white stat-value">0</h2>
-                    </div>
-                </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
-                <div class="lg:col-span-2 bg-white p-8 rounded-[3rem] shadow-xl">
-                    <h3 class="font-black text-slate-800 mb-6 italic text-xs uppercase tracking-widest flex items-center gap-2">
+            <!-- Time Filters -->
+            <div class="flex gap-2 flex-wrap">
+                <button data-period="7" class="filter-btn active px-4 py-2 rounded-xl text-xs font-black uppercase bg-slate-100 text-slate-600">7 días</button>
+                <button data-period="30" class="filter-btn px-4 py-2 rounded-xl text-xs font-black uppercase bg-slate-100 text-slate-600">30 días</button>
+                <button data-period="90" class="filter-btn px-4 py-2 rounded-xl text-xs font-black uppercase bg-slate-100 text-slate-600">3 meses</button>
+                <button data-period="all" class="filter-btn px-4 py-2 rounded-xl text-xs font-black uppercase bg-slate-100 text-slate-600">Histórico</button>
+            </div>
+        </header>
+
+        <!-- AI Summary -->
+        <div id="ai-summary" class="bg-gradient-to-r from-purple-50 to-blue-50 p-6 rounded-3xl mb-6 border-2 border-purple-200">
+            <div class="flex items-start gap-4">
+                <div class="bg-purple-600 text-white p-3 rounded-xl">
+                    <i class="fas fa-brain text-xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-black text-sm mb-2 flex items-center gap-2">
+                        <span>🤖 AI Summary</span>
+                        <span class="text-[9px] bg-purple-600 text-white px-2 py-1 rounded-full">BETA</span>
+                    </h3>
+                    <p id="ai-summary-text" class="text-sm text-slate-600 font-medium leading-relaxed"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPIs -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <div class="glass-card p-6 rounded-[2.5rem] shadow-sm cursor-pointer" onclick="drillDown('total')">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Reportes</p>
+                <div class="flex items-end gap-2 mb-2">
+                    <h2 id="kpi-total" class="text-5xl font-black text-slate-800 stat-value">0</h2>
+                    <div id="trend-total" class="text-xs font-black mb-2"></div>
+                </div>
+                <p class="text-[9px] text-slate-400 font-bold">vs período anterior</p>
+            </div>
+            
+            <div class="glass-card p-6 rounded-[2.5rem] shadow-sm border-b-4 border-green-500 cursor-pointer" onclick="drillDown('eficiencia')">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Eficiencia</p>
+                <div class="flex items-end gap-2 mb-2">
+                    <h2 id="kpi-eficiencia" class="text-5xl font-black text-green-600 stat-value">0%</h2>
+                </div>
+                <p class="text-[9px] text-slate-400 font-bold" id="subtitle-eficiencia">completados</p>
+            </div>
+            
+            <div class="glass-card p-6 rounded-[2.5rem] shadow-sm border-b-4 border-blue-500 cursor-pointer" onclick="drillDown('revision')">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">En Revisión</p>
+                <div class="flex items-end gap-2 mb-2">
+                    <h2 id="kpi-revision" class="text-5xl font-black text-blue-600 stat-value">0</h2>
+                </div>
+                <p class="text-[9px] text-slate-400 font-bold">en proceso</p>
+            </div>
+            
+            <div class="glass-card p-6 rounded-[2.5rem] shadow-sm bg-slate-900 cursor-pointer" onclick="drillDown('urgentes')">
+                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Críticas</p>
+                <div class="flex items-end gap-2 mb-2">
+                    <h2 id="kpi-urgentes" class="text-5xl font-black text-white stat-value">0</h2>
+                </div>
+                <p class="text-[9px] text-slate-500 font-bold">prioridad alta</p>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+            <div class="lg:col-span-2 bg-white p-8 rounded-[3rem] shadow-xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-black text-slate-800 italic text-xs uppercase tracking-widest flex items-center gap-2">
                         <i class="fas fa-chart-bar text-blue-900"></i> Incidencias por Categoría
                     </h3>
-                    <div class="h-80"><canvas id="chartCategorias"></canvas></div>
+                    <button onclick="toggleChartType()" class="text-[10px] text-blue-900 font-black uppercase hover:underline">
+                        <i class="fas fa-exchange-alt mr-1"></i>Cambiar vista
+                    </button>
                 </div>
-                <div class="bg-white p-8 rounded-[3rem] shadow-xl flex flex-col">
-                    <h3 class="font-black text-slate-800 mb-6 italic text-xs uppercase tracking-widest flex items-center gap-2">
-                        <i class="fas fa-adjust text-blue-900"></i> Salud Operativa
-                    </h3>
-                    <div class="flex-1 flex items-center"><canvas id="chartEstatus"></canvas></div>
-                </div>
+                <div class="h-80"><canvas id="chartCategorias"></canvas></div>
             </div>
-
-            <div class="bg-white p-4 md:p-8 rounded-[3rem] shadow-xl border border-slate-100 overflow-hidden">
-                <h3 class="font-black text-slate-800 mb-6 italic text-xs uppercase tracking-widest">Actividad Reciente en el Municipio</h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b">
-                                <th class="pb-4">ID Reporte</th>
-                                <th class="pb-4">Categoría</th>
-                                <th class="pb-4 hidden sm:table-cell">Zona</th>
-                                <th class="pb-4">Estatus</th>
-                                <th class="pb-4 text-right hidden md:table-cell">Prioridad</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-reciente" class="text-sm font-bold text-slate-600">
-                            </tbody>
-                    </table>
-                </div>
+            
+            <div class="bg-white p-8 rounded-[3rem] shadow-xl flex flex-col">
+                <h3 class="font-black text-slate-800 mb-6 italic text-xs uppercase tracking-widest flex items-center gap-2">
+                    <i class="fas fa-chart-pie text-blue-900"></i> Salud Operativa
+                </h3>
+                <div class="flex-1 flex items-center"><canvas id="chartEstatus"></canvas></div>
+                <div id="stats-breakdown" class="mt-4 space-y-2 text-xs font-bold"></div>
             </div>
-        </main>
-    </div>
+        </div>
 
-    <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwgCPHD049p8E6Bns4LcFnPLP1HlDTOCDWHUj7Zt_XYAT0QWxtrUEe0jv75rTxwMKU6/exec";
-        let chartEstatus, chartCategorias;
+        <!-- Trend Chart -->
+        <div class="bg-white p-8 rounded-[3rem] shadow-xl mb-10">
+            <h3 class="font-black text-slate-800 mb-6 italic text-xs uppercase tracking-widest flex items-center gap-2">
+                <i class="fas fa-chart-line text-blue-900"></i> Tendencia Temporal
+            </h3>
+            <div class="h-64"><canvas id="chartTendencia"></canvas></div>
+        </div>
 
-        // Mobile menu toggle
-        function toggleMobileMenu() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('mobile-overlay');
-            
-            if (sidebar.classList.contains('-translate-x-full')) {
-                sidebar.classList.remove('-translate-x-full');
-                sidebar.classList.add('translate-x-0');
-                overlay.classList.remove('opacity-0', 'pointer-events-none');
-                overlay.classList.add('opacity-100', 'pointer-events-auto');
-            } else {
-                sidebar.classList.add('-translate-x-full');
-                sidebar.classList.remove('translate-x-0');
-                overlay.classList.add('opacity-0', 'pointer-events-none');
-                overlay.classList.remove('opacity-100', 'pointer-events-auto');
-            }
-        }
+        <!-- Activity Table -->
+        <div class="bg-white p-4 md:p-8 rounded-[3rem] shadow-xl border border-slate-100 overflow-hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-black text-slate-800 italic text-xs uppercase tracking-widest">📋 Actividad Reciente</h3>
+                <button onclick="goToReportes()" class="text-[10px] text-blue-900 font-black uppercase hover:underline">Ver todos →</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left" style="min-width:800px">
+                    <thead>
+                        <tr class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b">
+                            <th class="pb-4">ID Reporte</th>
+                            <th class="pb-4">Categoría</th>
+                            <th class="pb-4">Zona</th>
+                            <th class="pb-4">Estatus</th>
+                            <th class="pb-4 text-right">Prioridad</th>
+                            <th class="pb-4 text-right">Días</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-reciente" class="text-sm font-bold text-slate-600"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
 
-        // Verificar sesión al cargar
-        window.onload = function() {
-            verificarSesion();
-            fetchDashboardData();
-        };
+<!-- Quick Actions -->
+<div class="quick-actions">
+    <button class="quick-btn" onclick="openCommandPalette()" title="Buscar (/)">
+        <i class="fas fa-search"></i>
+    </button>
+    <button class="quick-btn" onclick="showShortcuts()" title="Atajos (?)">
+        <i class="fas fa-keyboard"></i>
+    </button>
+</div>
 
-        function verificarSesion() {
-            const session = JSON.parse(localStorage.getItem('user_session') || 'null');
-            
-            if (!session || !session.email) {
-                window.location.href = 'index.html';
-                return;
-            }
+<script>
+const SCRIPT_URL="https://script.google.com/macros/s/AKfycbwf6zkn7u0PO3t9TPkVG2NjoDwRF7-BuSAtP4T0PXaDStulKQBJOXqzWFwm5Nqh6LP-jA/exec";
+let allReportes=[],filteredReportes=[],currentPeriod=7,chartEstatus,chartCategorias,chartTendencia,chartType='bar',focusMode=false,notifications=[],currentReporteId=null;
 
-            if (session.rol !== 'empleado' && session.rol !== 'admin') {
-                window.location.href = 'index.html';
-                return;
-            }
+window.onload=()=>{verificarSesion();fetchDashboardData();setupFilters();setupKeyboardShortcuts();loadNotifications();updateRecentActivity()};
 
-            document.getElementById('user-name').textContent = `${session.nombre} ${session.apellido}`;
-            document.getElementById('user-email').textContent = session.email;
-        }
+function verificarSesion(){const s=JSON.parse(localStorage.getItem('user_session')||'null');if(!s||!s.email||s.rol!=='empleado'&&s.rol!=='admin'){window.location.href='index.html';return}document.getElementById('user-name').textContent=`${s.nombre} ${s.apellido}`;document.getElementById('user-email').textContent=s.email}
 
-        function cerrarSesion() {
-            if (confirm('¿Estás seguro que deseas cerrar sesión?')) {
-                localStorage.removeItem('user_session');
-                window.location.href = 'index.html';
-            }
-        }
+function cerrarSesion(){if(confirm('¿Estás seguro que deseas cerrar sesión?')){localStorage.removeItem('user_session');window.location.href='index.html'}}
 
-        async function fetchDashboardData() {
-            try {
-                const res = await fetch(SCRIPT_URL);
-                const data = await res.json();
-                processData(data);
-            } catch (e) { console.error(e); }
-        }
+function toggleMobileMenu(){const sidebar=document.getElementById('sidebar'),overlay=document.getElementById('mobile-overlay');if(sidebar.classList.contains('-translate-x-full')){sidebar.classList.remove('-translate-x-full');sidebar.classList.add('translate-x-0');overlay.classList.remove('opacity-0','pointer-events-none');overlay.classList.add('opacity-100','pointer-events-auto')}else{sidebar.classList.add('-translate-x-full');sidebar.classList.remove('translate-x-0');overlay.classList.add('opacity-0','pointer-events-none');overlay.classList.remove('opacity-100','pointer-events-auto')}}
 
-        function processData(reportes) {
-            const total = reportes.length;
-            const resueltos = reportes.filter(r => r.estatus === 'Completado').length;
-            const eficiencia = total > 0 ? Math.round((resueltos / total) * 100) : 0;
-            const revision = reportes.filter(r => r.estatus === 'En Revisión').length;
-            const urgentes = reportes.filter(r => r.prioridad === 'Alta').length;
+function setupKeyboardShortcuts(){document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;switch(e.key.toLowerCase()){case'g':window.location.href='dashboard1.html';break;case'r':window.location.href='reportes1.html';break;case'm':window.location.href='mapa1.html';break;case'/':e.preventDefault();openCommandPalette();break;case'f':toggleFocusMode();break;case'e':exportarReporte();break;case'?':showShortcuts();break;case'escape':closeModal();closeCommandPalette();break}})}
 
-            document.getElementById('kpi-total').innerText = total;
-            document.getElementById('kpi-eficiencia').innerText = eficiencia + "%";
-            document.getElementById('kpi-revision').innerText = revision;
-            document.getElementById('kpi-urgentes').innerText = urgentes;
+function showShortcuts(){document.getElementById('shortcuts-help').classList.add('active')}
+function closeShortcuts(){document.getElementById('shortcuts-help').classList.remove('active')}
 
-            const catCounts = {};
-            reportes.forEach(r => {
-                const cat = r.categoría || r.categoria || 'Sin categoría';
-                catCounts[cat] = (catCounts[cat] || 0) + 1;
-            });
-            updateBarChart(catCounts);
+function openCommandPalette(){document.getElementById('command-palette').classList.add('active');document.getElementById('command-input').focus();updateCommandResults('')}
 
-            const statusCounts = {
-                'Nuevo': reportes.filter(r => r.estatus === 'Nuevo').length,
-                'Pendiente': reportes.filter(r => r.estatus === 'Pendiente').length,
-                'Completado': reportes.filter(r => r.estatus === 'Completado').length
-            };
-            updateDoughnutChart(statusCounts);
+function closeCommandPalette(){document.getElementById('command-palette').classList.remove('active');document.getElementById('command-input').value=''}
 
-            const ultimosCinco = reportes.slice(-5).reverse();
-            document.getElementById('tabla-reciente').innerHTML = ultimosCinco.map(r => `
-                <tr class="border-b border-slate-50 hover:bg-slate-50 transition-all">
-                    <td class="py-4 text-blue-900 font-black italic uppercase text-xs md:text-base">AG-${r.id_reporte}</td>
-                    <td class="py-4 text-xs md:text-base">${r.categoría || r.categoria || 'Sin categoría'}</td>
-                    <td class="py-4 text-slate-400 font-medium italic hidden sm:table-cell text-xs md:text-base">${r.ubicación || r.ubicacion || 'Sin ubicación'}</td>
-                    <td class="py-4 text-[10px] font-black uppercase text-slate-400">${r.estatus}</td>
-                    <td class="py-4 text-right hidden md:table-cell">
-                        <span class="px-3 py-1 rounded-full text-[9px] ${r.prioridad === 'Alta' ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-500'}">
-                            ${r.prioridad || 'Media'}
-                        </span>
-                    </td>
-                </tr>
-            `).join('');
-        }
+document.getElementById('command-input')?.addEventListener('input',e=>updateCommandResults(e.target.value));
+document.getElementById('command-input')?.addEventListener('keydown',e=>{if(e.key==='Escape')closeCommandPalette()});
 
-        function updateBarChart(counts) {
-            const ctx = document.getElementById('chartCategorias');
-            if(chartCategorias) chartCategorias.destroy();
-            chartCategorias = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(counts),
-                    datasets: [{
-                        data: Object.values(counts),
-                        backgroundColor: '#1e3a8a',
-                        borderRadius: 15,
-                        barThickness: 30
-                    }]
-                },
-                options: { 
-                    maintainAspectRatio: false, 
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }
-                }
-            });
-        }
+function updateCommandResults(query){const results=[];if(!query){results.push({icon:'chart-pie',text:'Ir a Dashboard',action:()=>window.location.href='dashboard1.html'},{icon:'clipboard-list',text:'Ir a Reportes',action:()=>window.location.href='reportes1.html'},{icon:'map-marked-alt',text:'Ir a Mapa',action:()=>window.location.href='mapa1.html'},{icon:'download',text:'Exportar Dashboard',action:exportarReporte},{icon:'eye',text:'Activar Modo Focus',action:toggleFocusMode})}else{const matches=allReportes.filter(r=>r.id_reporte.toLowerCase().includes(query.toLowerCase())||(r.categoría&&r.categoría.toLowerCase().includes(query.toLowerCase()))||(r.ubicación&&r.ubicación.toLowerCase().includes(query.toLowerCase())));matches.slice(0,5).forEach(r=>results.push({icon:'file-alt',text:`${r.id_reporte} - ${r.categoría||'Sin categoría'}`,action:()=>showReporteDetail(r.id_reporte)}))}const html=results.map(r=>`<div onclick="executeCommand(this)" data-action="${r.text}" class="p-4 hover:bg-slate-50 cursor-pointer flex items-center gap-3 border-b"><i class="fas fa-${r.icon} text-blue-900"></i><span class="font-bold text-sm">${r.text}</span></div>`).join('');document.getElementById('command-results').innerHTML=html;window.commandActions=results.reduce((acc,r)=>{acc[r.text]=r.action;return acc},{})}
 
-        function updateDoughnutChart(counts) {
-            const ctx = document.getElementById('chartEstatus');
-            if(chartEstatus) chartEstatus.destroy();
-            chartEstatus = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(counts),
-                    datasets: [{
-                        data: Object.values(counts),
-                        backgroundColor: ['#ef4444', '#f97316', '#22c55e'],
-                        borderWidth: 10,
-                        borderColor: '#ffffff'
-                    }]
-                },
-                options: { maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom', labels: { font: { weight: 'bold', size: 10 } } } } }
-            });
-        }
-    </script>
+function executeCommand(el){const action=el.dataset.action;if(window.commandActions&&window.commandActions[action]){window.commandActions[action]();closeCommandPalette()}}
+
+function toggleFocusMode(){focusMode=!focusMode;document.body.classList.toggle('focus-mode')}
+
+function loadNotifications(){notifications=[{id:1,text:'Nuevo reporte en Zona Centro',time:'5 min',unread:true},{id:2,text:'Reporte completado',time:'1 hora',unread:true},{id:3,text:'3 reportes sin atención >7 días',time:'2 horas',unread:false}];updateNotificationBadge()}
+
+function updateNotificationBadge(){const unread=notifications.filter(n=>n.unread).length,badge=document.getElementById('notif-badge');if(unread>0){badge.textContent=unread;badge.style.display='flex'}else{badge.style.display='none'}}
+
+function toggleNotifications(){const panel=document.getElementById('notification-panel');panel.classList.toggle('active');if(panel.classList.contains('active')){const html=notifications.map(n=>`<div class="p-3 hover:bg-slate-50 cursor-pointer ${n.unread?'bg-blue-50':''}"><p class="text-xs font-bold">${n.text}</p><p class="text-[10px] text-slate-400 mt-1">${n.time}</p></div>`).join('');document.getElementById('notification-list').innerHTML=html;notifications.forEach(n=>n.unread=false);updateNotificationBadge()}}
+
+function updateRecentActivity(){const activity=(localStorage.getItem('recent_activity')||'').split(',').filter(Boolean).slice(0,3),html=activity.map(id=>`<div class="text-blue-300 hover:text-white cursor-pointer" onclick="showReporteDetail('${id}')"><i class="fas fa-file-alt mr-2 text-[10px]"></i>${id}</div>`).join('');document.getElementById('recent-activity').innerHTML=html||'<p class="text-blue-400 text-[10px]">Sin actividad</p>'}
+
+function addToRecentActivity(id){const activity=(localStorage.getItem('recent_activity')||'').split(',').filter(Boolean);activity.unshift(id);localStorage.setItem('recent_activity',[...new Set(activity)].slice(0,10).join(','));updateRecentActivity()}
+
+function setupFilters(){document.querySelectorAll('.filter-btn').forEach(btn=>btn.addEventListener('click',function(){document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active');currentPeriod=this.dataset.period==='all'?9999:parseInt(this.dataset.period);processData(allReportes)}))}
+
+async function fetchDashboardData(){const syncIcon=document.getElementById('sync-icon');syncIcon.classList.add('fa-spin');try{const res=await fetch(SCRIPT_URL);allReportes=await res.json();const ahora=new Date(),horaStr=ahora.getHours()+":"+ahora.getMinutes().toString().padStart(2,'0');document.getElementById('last-sync').innerText=horaStr;processData(allReportes)}catch(e){console.error("Error:",e);alert('Error al cargar datos')}finally{syncIcon.classList.remove('fa-spin')}}
+
+function filterByPeriod(reportes){if(currentPeriod===9999)return reportes;const ahora=new Date(),cutoffDate=new Date(ahora-(currentPeriod*24*60*60*1000));return reportes.filter(r=>{const fecha=new Date(r.fecha);return fecha>=cutoffDate})}
+
+function processData(reportes){filteredReportes=filterByPeriod(reportes);const total=filteredReportes.length,resueltos=filteredReportes.filter(r=>r.estatus==='Completado').length,eficiencia=total>0?Math.round((resueltos/total)*100):0,revision=filteredReportes.filter(r=>r.estatus==='En Revisión').length,urgentes=filteredReportes.filter(r=>r.prioridad==='Alta').length;const previousPeriod=filterByPeriod(allReportes.filter(r=>{const fecha=new Date(r.fecha),ahora=new Date(),cutoff1=new Date(ahora-(currentPeriod*24*60*60*1000)),cutoff2=new Date(ahora-(2*currentPeriod*24*60*60*1000));return fecha>=cutoff2&&fecha<cutoff1})),previousTotal=previousPeriod.length,trendTotal=previousTotal>0?Math.round(((total-previousTotal)/previousTotal)*100):0;document.getElementById('kpi-total').innerText=total;document.getElementById('trend-total').innerHTML=trendTotal>=0?`<i class="fas fa-arrow-up trend-up"></i> ${trendTotal}%`:`<i class="fas fa-arrow-down trend-down"></i> ${Math.abs(trendTotal)}%`;document.getElementById('kpi-eficiencia').innerText=eficiencia+"%";document.getElementById('subtitle-eficiencia').innerText=`${resueltos} de ${total} completados`;document.getElementById('kpi-revision').innerText=revision;document.getElementById('kpi-urgentes').innerText=urgentes;generateAISummary(filteredReportes);updateCharts(filteredReportes);updateTable(filteredReportes)}
+
+function generateAISummary(reportes){const total=reportes.length,completados=reportes.filter(r=>r.estatus==='Completado').length,urgentes=reportes.filter(r=>r.prioridad==='Alta').length,catCounts={};reportes.forEach(r=>{const cat=r.categoría||r.categoria||'Otros';catCounts[cat]=(catCounts[cat]||0)+1});const topCat=Object.entries(catCounts).sort((a,b)=>b[1]-a[1])[0];let summary=`En los últimos ${currentPeriod===9999?'todos los períodos':currentPeriod+' días'}, se registraron ${total} incidencias. `;if(topCat){summary+=`La categoría más reportada es "${topCat[0]}" con ${topCat[1]} casos (${Math.round((topCat[1]/total)*100)}%). `}summary+=`${completados} ya fueron resueltas (${Math.round((completados/total)*100)}% de eficiencia). `;if(urgentes>0){summary+=`⚠️ Hay ${urgentes} reportes de prioridad alta que requieren atención inmediata.`}else{summary+=`✅ No hay alertas críticas pendientes.`}document.getElementById('ai-summary-text').textContent=summary}
+
+function updateCharts(reportes){const catCounts={};reportes.forEach(r=>{const cat=r.categoría||r.categoria||'Sin categoría';catCounts[cat]=(catCounts[cat]||0)+1});updateCategoriesChart(catCounts);const statusCounts={'Nuevo':reportes.filter(r=>r.estatus==='Nuevo').length,'Pendiente':reportes.filter(r=>r.estatus==='Pendiente').length,'En Revisión':reportes.filter(r=>r.estatus==='En Revisión').length,'Completado':reportes.filter(r=>r.estatus==='Completado').length};updateStatusChart(statusCounts);updateTrendChart(reportes)}
+
+function updateCategoriesChart(counts){const ctx=document.getElementById('chartCategorias');if(chartCategorias)chartCategorias.destroy();chartCategorias=new Chart(ctx,{type:chartType,data:{labels:Object.keys(counts),datasets:[{label:'Reportes',data:Object.values(counts),backgroundColor:['#1e3a8a','#3b82f6','#60a5fa','#93c5fd'],borderRadius:chartType==='bar'?15:0,barThickness:chartType==='bar'?40:undefined}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:chartType!=='bar'},tooltip:{callbacks:{label:context=>`${context.label}: ${context.raw} reportes`}}},scales:chartType==='bar'?{y:{beginAtZero:true,grid:{display:false}},x:{grid:{display:false}}}:{}}})}
+
+function updateStatusChart(counts){const ctx=document.getElementById('chartEstatus');if(chartEstatus)chartEstatus.destroy();chartEstatus=new Chart(ctx,{type:'doughnut',data:{labels:Object.keys(counts),datasets:[{data:Object.values(counts),backgroundColor:['#ef4444','#f97316','#3b82f6','#22c55e'],borderWidth:8,borderColor:'#ffffff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{position:'bottom',labels:{font:{weight:'bold',size:10}}}}}});const total=Object.values(counts).reduce((a,b)=>a+b,0),breakdown=Object.entries(counts).map(([status,count])=>{const pct=total>0?Math.round((count/total)*100):0;return`<div class="flex justify-between"><span>${status}:</span><span class="font-black">${count} (${pct}%)</span></div>`}).join('');document.getElementById('stats-breakdown').innerHTML=breakdown}
+
+function updateTrendChart(reportes){const ctx=document.getElementById('chartTendencia');if(chartTendencia)chartTendencia.destroy();const dateCounts={};reportes.forEach(r=>{const fecha=new Date(r.fecha),dateKey=fecha.toISOString().split('T')[0];dateCounts[dateKey]=(dateCounts[dateKey]||0)+1});const sortedDates=Object.keys(dateCounts).sort();chartTendencia=new Chart(ctx,{type:'line',data:{labels:sortedDates.map(d=>new Date(d).toLocaleDateString('es-PR',{month:'short',day:'numeric'})),datasets:[{label:'Reportes por día',data:sortedDates.map(d=>dateCounts[d]),borderColor:'#1e3a8a',backgroundColor:'rgba(30,58,138,0.1)',fill:true,tension:0.4,borderWidth:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'}},x:{grid:{display:false}}}}})}
+
+function updateTable(reportes){const ultimosDiez=reportes.slice(-10).reverse(),html=ultimosDiez.map(r=>{const diasEspera=calcularDias(r.fecha);return`<tr class="border-b border-slate-50 hover:bg-slate-50 transition-all cursor-pointer" onclick="showReporteDetail('${r.id_reporte}')"><td class="py-4 text-blue-900 font-black italic uppercase text-xs">${r.id_reporte}</td><td class="py-4 text-xs">${r.categoría||r.categoria||'Sin categoría'}</td><td class="py-4 text-slate-400 font-medium italic text-xs">${r.ubicación||r.ubicacion||'Sin ubicación'}</td><td class="py-4 text-[10px] font-black uppercase text-slate-400">${r.estatus}</td><td class="py-4 text-right"><span class="px-3 py-1 rounded-full text-[9px] font-black ${r.prioridad==='Alta'?'bg-red-100 text-red-600':'bg-slate-100 text-slate-500'}">${r.prioridad||'Media'}</span></td><td class="py-4 text-right text-[10px] font-black text-orange-600">${diasEspera}</td></tr>`}).join('');document.getElementById('tabla-reciente').innerHTML=html}
+
+function calcularDias(fecha){const ahora=new Date(),fechaReporte=new Date(fecha),diff=Math.floor((ahora-fechaReporte)/(1000*60*60*24));return diff===0?'HOY':diff===1?'AYER':`${diff}D`}
+
+function showReporteDetail(id){currentReporteId=id;addToRecentActivity(id);const reporte=allReportes.find(r=>r.id_reporte===id);if(!reporte){alert('Reporte no encontrado');return}document.getElementById('modal-title').textContent=id;const content=`<div class="grid grid-cols-2 gap-4"><div><p class="text-xs font-black text-slate-400 uppercase mb-1">Categoría</p><p class="text-sm font-bold">${reporte.categoría||reporte.categoria||'Sin categoría'}</p></div><div><p class="text-xs font-black text-slate-400 uppercase mb-1">Prioridad</p><p class="text-sm font-bold">${reporte.prioridad||'Media'}</p></div><div><p class="text-xs font-black text-slate-400 uppercase mb-1">Estatus</p><p class="text-sm font-bold">${reporte.estatus}</p></div><div><p class="text-xs font-black text-slate-400 uppercase mb-1">Fecha</p><p class="text-sm font-bold">${new Date(reporte.fecha).toLocaleDateString('es-PR')}</p></div><div class="col-span-2"><p class="text-xs font-black text-slate-400 uppercase mb-1">Ubicación</p><p class="text-sm font-bold">${reporte.ubicación||reporte.ubicacion||'Sin ubicación'}</p></div><div class="col-span-2"><p class="text-xs font-black text-slate-400 uppercase mb-1">Descripción</p><p class="text-sm">${reporte.descripción||reporte.descripcion||'Sin descripción'}</p></div>${reporte.foto_url?`<div class="col-span-2"><p class="text-xs font-black text-slate-400 uppercase mb-2">Foto</p><img src="${reporte.foto_url}" alt="Foto" class="w-full rounded-xl"></div>`:''}${reporte.latitud&&reporte.longitud?`<div class="col-span-2"><p class="text-xs font-black text-slate-400 uppercase mb-1">GPS</p><p class="text-sm font-mono">${reporte.latitud}, ${reporte.longitud}</p></div>`:''}</div>`;document.getElementById('modal-content').innerHTML=content;document.getElementById('detail-modal').classList.add('active')}
+
+function closeModal(){document.getElementById('detail-modal').classList.remove('active')}
+
+function goToReportes(){window.location.href=currentReporteId?`reportes1.html?id=${currentReporteId}`:'reportes1.html'}
+
+function drillDown(kpi){let filter='';switch(kpi){case'urgentes':filter='prioridad=Alta';break;case'revision':filter='estatus=En Revisión';break;case'eficiencia':filter='estatus=Completado';break}window.location.href=`reportes1.html?${filter}`}
+
+function toggleChartType(){chartType=chartType==='bar'?'pie':'bar';processData(allReportes)}
+
+function exportarReporte(){let csv=`Reporte Dashboard - Aguadilla
+
+Período: ${currentPeriod===9999?'Histórico':'Últimos '+currentPeriod+' días'}
+Generado: ${new Date().toLocaleString('es-PR')}
+
+Total Reportes,${filteredReportes.length}
+Completados,${filteredReportes.filter(r=>r.estatus==='Completado').length}
+En Revisión,${filteredReportes.filter(r=>r.estatus==='En Revisión').length}
+Urgentes,${filteredReportes.filter(r=>r.prioridad==='Alta').length}
+
+ID,Categoria,Ubicacion,Estatus,Prioridad,Fecha
+`;filteredReportes.forEach(r=>csv+=`${r.id_reporte},"${r.categoría||r.categoria}","${r.ubicación||r.ubicacion}",${r.estatus},${r.prioridad},${r.fecha}
+`);const blob=new Blob([csv],{type:'text/csv'}),url=window.URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`aguadilla-dashboard-${new Date().toISOString().split('T')[0]}.csv`;a.click();window.URL.revokeObjectURL(url)}
+
+document.getElementById('detail-modal')?.addEventListener('click',e=>{if(e.target.id==='detail-modal')closeModal()});
+document.getElementById('command-palette')?.addEventListener('click',e=>{if(e.target.id==='command-palette')closeCommandPalette()});
+document.addEventListener('click',e=>{if(!e.target.closest('#notification-panel')&&!e.target.closest('[onclick*="toggleNotifications"]')){document.getElementById('notification-panel').classList.remove('active')}});
+</script>
 </body>
 </html>

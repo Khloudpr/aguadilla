@@ -2,324 +2,305 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Consola Municipal - Aguadilla</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Reportes - Aguadilla Ultimate</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .filter-btn.active { background-color: #1e3a8a; color: white; border-color: #1e3a8a; }
-        .sidebar-link { font-size: 0.85rem; letter-spacing: 0.05em; font-weight: 800; }
-        body { min-height: 100vh; display: flex; flex-direction: column; color: #1e293b; }
-        table { border-collapse: separate; border-spacing: 0 8px; }
-        tr { border-radius: 1rem; }
-        .btn-logout { transition: all 0.3s ease; }
-        .btn-logout:hover { background-color: #dc2626; transform: translateX(5px); }
+        .filter-btn.active{background-color:#1e3a8a;color:white;border-color:#1e3a8a}
+        .sidebar-link{font-size:0.85rem;letter-spacing:0.05em;font-weight:800}
+        body{min-height:100vh;display:flex;flex-direction:column;color:#1e293b;background:#f1f5f9}
+        table{border-collapse:separate;border-spacing:0 8px}
+        .btn-logout{transition:all 0.3s}
+        .btn-logout:hover{background-color:#dc2626;transform:translateX(5px)}
+        .modal{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.7);align-items:center;justify-content:center}
+        .modal.active{display:flex}
+        .modal-content{background:white;border-radius:2rem;max-width:900px;width:90%;max-height:90vh;overflow-y:auto;animation:slideUp 0.3s}
+        @keyframes slideUp{from{opacity:0;transform:translateY(50px)}to{opacity:1;transform:translateY(0)}}
+        .command-palette{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.8);align-items:flex-start;justify-content:center;padding-top:15vh}
+        .command-palette.active{display:flex}
+        .quick-actions{position:fixed;bottom:30px;right:30px;z-index:50;display:flex;gap:10px}
+        .quick-btn{width:56px;height:56px;border-radius:50%;background:#1e3a8a;color:white;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(30,58,138,0.4);cursor:pointer;transition:all 0.3s}
+        .quick-btn:hover{transform:scale(1.1);box-shadow:0 6px 20px rgba(30,58,138,0.6)}
+        body.focus-mode .sidebar,body.focus-mode .quick-actions,body.focus-mode header{opacity:0.3;pointer-events:none}
+        .breadcrumb{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em}
+        .breadcrumb a{color:#64748b;transition:color 0.2s}
+        .breadcrumb a:hover{color:#1e3a8a}
+        .breadcrumb .current{color:#1e3a8a}
+        .row-highlight{background:#fef3c7;animation:highlight 2s}
+        @keyframes highlight{from{background:#fef3c7}to{background:transparent}}
     </style>
 </head>
 <body class="bg-slate-100 font-sans">
 
-    <!-- Mobile Menu Button -->
-    <button onclick="toggleMobileMenu()" class="md:hidden fixed top-4 left-4 z-50 bg-blue-900 text-white p-3 rounded-xl shadow-lg">
-        <i class="fas fa-bars text-xl"></i>
-    </button>
-
-    <!-- Mobile Overlay -->
-    <div id="mobile-overlay" onclick="toggleMobileMenu()" class="md:hidden fixed inset-0 bg-black/50 z-40 opacity-0 pointer-events-none transition-opacity"></div>
-
-    <div class="flex flex-1">
-        <!-- Sidebar -->
-        <aside id="sidebar" class="w-72 bg-blue-900 text-white p-8 flex flex-col fixed md:sticky top-0 h-screen shadow-2xl z-40 -translate-x-full md:translate-x-0 transition-transform duration-300">
-            <button onclick="toggleMobileMenu()" class="md:hidden absolute top-4 right-4 text-white text-2xl">
-                <i class="fas fa-times"></i>
-            </button>
-
-            <div class="flex items-center gap-3 mb-12">
-                <div class="bg-white text-blue-900 p-1.5 rounded-lg font-black text-xl">AR</div>
-                <span class="font-black text-xl uppercase italic tracking-tighter">Aguadilla</span>
-            </div>
-            <nav class="space-y-6 flex-1">
-                <a href="dashboard1.html" class="sidebar-link flex items-center gap-4 opacity-70 hover:opacity-100 transition-all p-2"><i class="fas fa-th-large w-6 text-lg"></i> DASHBOARD</a>
-                <a href="reportes1.html" class="sidebar-link flex items-center gap-4 bg-blue-800 p-4 rounded-2xl shadow-lg"><i class="fas fa-clipboard-list w-6 text-lg"></i> REPORTES</a>
-                <a href="mapa1.html" class="sidebar-link flex items-center gap-4 opacity-70 hover:opacity-100 transition-all p-2"><i class="fas fa-map-marked-alt w-6 text-lg"></i> MAPA</a>
-            </nav>
-            
-            <div class="border-t border-blue-800 pt-6 space-y-4">
-                <div class="bg-blue-800/50 rounded-2xl p-4">
-                    <div class="flex items-center gap-3 mb-2">
-                        <div class="bg-blue-700 w-10 h-10 rounded-full flex items-center justify-center">
-                            <i class="fas fa-user text-white"></i>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-xs font-black text-white truncate" id="user-name">Empleado</p>
-                            <p class="text-[9px] text-blue-300 truncate" id="user-email">email@aguadilla.com</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <button onclick="cerrarSesion()" class="btn-logout w-full bg-red-600 hover:bg-red-700 text-white p-3 rounded-2xl shadow-lg flex items-center justify-center gap-2 font-black text-sm uppercase tracking-wider">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Cerrar Sesión
-                </button>
-            </div>
-            
-            <div class="pt-4 text-[10px] font-black text-blue-400 uppercase tracking-widest italic text-center">
-                Sistema Oficial v3.0
-            </div>
-        </aside>
-
-        <div class="flex-1 flex flex-col p-4 md:p-10 w-full md:ml-0">
-            <header class="mb-10 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
-                <div>
-                    <h1 class="text-2xl md:text-4xl font-black text-slate-800 tracking-tight italic">Gestión de Incidencias</h1>
-                    <p class="text-slate-500 font-bold text-sm md:text-base mt-2">Panel de Control Operativo - Municipio de Aguadilla</p>
-                </div>
-                
-                <div class="flex flex-wrap gap-2 md:gap-3 bg-white p-2 rounded-3xl shadow-md border border-slate-200 w-full lg:w-auto overflow-x-auto">
-                    <button onclick="filtrar('Todos')" class="filter-btn active px-4 md:px-6 py-2 md:py-3 rounded-2xl text-[10px] md:text-xs font-black tracking-widest transition-all whitespace-nowrap">TODOS</button>
-                    <button onclick="filtrar('Nuevo')" class="filter-btn px-4 md:px-6 py-2 md:py-3 rounded-2xl text-[10px] md:text-xs font-black text-slate-400 tracking-widest transition-all whitespace-nowrap">NUEVOS</button>
-                    <button onclick="filtrar('Pendiente')" class="filter-btn px-4 md:px-6 py-2 md:py-3 rounded-2xl text-[10px] md:text-xs font-black text-slate-400 tracking-widest transition-all whitespace-nowrap">PENDIENTES</button>
-                    <button onclick="filtrar('En Revisión')" class="filter-btn px-4 md:px-6 py-2 md:py-3 rounded-2xl text-[10px] md:text-xs font-black text-slate-400 tracking-widest transition-all uppercase whitespace-nowrap">EN REVISIÓN</button>
-                    <button onclick="filtrar('Completado')" class="filter-btn px-4 md:px-6 py-2 md:py-3 rounded-2xl text-[10px] md:text-xs font-black text-slate-400 tracking-widest transition-all uppercase whitespace-nowrap">COMPLETADOS</button>
-                </div>
-            </header>
-
-            <div class="overflow-x-auto">
-                <table class="w-full text-left min-w-[800px]">
-                    <thead>
-                        <tr class="text-slate-400 text-[10px] md:text-xs font-black uppercase tracking-[0.2em]">
-                            <th class="px-4 md:px-8 py-4">ID / Prioridad</th>
-                            <th class="px-4 md:px-8 py-4">Información Ciudadana</th>
-                            <th class="px-4 md:px-8 py-4 text-center">Evidencia / Categoría</th>
-                            <th class="px-4 md:px-8 py-4 text-center">Ubicación</th>
-                            <th class="px-4 md:px-8 py-4 text-center">Estatus</th>
-                            <th class="px-4 md:px-8 py-4 text-center">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-body">
-                        </tbody>
-                </table>
-            </div>
-
-            <footer class="mt-auto pt-10 border-t-4 border-blue-900 flex flex-col md:flex-row justify-between items-center px-4 gap-4">
-                <div>
-                    <h2 class="font-black text-xl md:text-2xl text-blue-900 uppercase italic">Municipio de Aguadilla</h2>
-                    <p class="text-slate-400 font-bold text-xs tracking-[0.4em] uppercase">El Jardín del Atlántico</p>
-                </div>
-                <div class="text-center md:text-right">
-                    <span class="bg-blue-900 text-white px-4 py-2 rounded-lg font-black text-[10px] tracking-widest">SISTEMA OFICIAL v3.0</span>
-                </div>
-            </footer>
+<!-- Shortcuts Help -->
+<div id="shortcuts-help" class="modal">
+    <div class="modal-content p-8">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-black">⌨️ Atajos de Teclado</h2>
+            <button onclick="closeShortcuts()" class="text-2xl text-slate-400 hover:text-slate-900">&times;</button>
+        </div>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+            <div class="flex justify-between"><kbd class="bg-slate-100 px-3 py-2 rounded font-mono">G</kbd><span class="ml-4">Ir a Dashboard</span></div>
+            <div class="flex justify-between"><kbd class="bg-slate-100 px-3 py-2 rounded font-mono">R</kbd><span class="ml-4">Ir a Reportes</span></div>
+            <div class="flex justify-between"><kbd class="bg-slate-100 px-3 py-2 rounded font-mono">M</kbd><span class="ml-4">Ir a Mapa</span></div>
+            <div class="flex justify-between"><kbd class="bg-slate-100 px-3 py-2 rounded font-mono">/</kbd><span class="ml-4">Búsqueda rápida</span></div>
+            <div class="flex justify-between"><kbd class="bg-slate-100 px-3 py-2 rounded font-mono">F</kbd><span class="ml-4">Modo Focus</span></div>
+            <div class="flex justify-between"><kbd class="bg-slate-100 px-3 py-2 rounded font-mono">E</kbd><span class="ml-4">Exportar</span></div>
+            <div class="flex justify-between"><kbd class="bg-slate-100 px-3 py-2 rounded font-mono">N</kbd><span class="ml-4">Nuevo reporte</span></div>
+            <div class="flex justify-between"><kbd class="bg-slate-100 px-3 py-2 rounded font-mono">?</kbd><span class="ml-4">Ver atajos</span></div>
         </div>
     </div>
+</div>
 
-    <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwf6zkn7u0PO3t9TPkVG2NjoDwRF7-BuSAtP4T0PXaDStulKQBJOXqzWFwm5Nqh6LP-jA/exec";
+<!-- Command Palette -->
+<div id="command-palette" class="command-palette">
+    <div class="w-full max-w-2xl px-4">
+        <input type="text" id="command-input" placeholder="🔍 Buscar por ID, categoría, ubicación..." class="w-full px-6 py-4 rounded-2xl text-lg font-bold border-4 border-blue-900 outline-none" autocomplete="off">
+        <div id="command-results" class="bg-white mt-2 rounded-2xl shadow-2xl max-h-96 overflow-y-auto"></div>
+    </div>
+</div>
 
-        function toggleMobileMenu() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('mobile-overlay');
+<!-- Detail Modal -->
+<div id="detail-modal" class="modal">
+    <div class="modal-content">
+        <div class="p-8">
+            <div class="flex justify-between items-start mb-6">
+                <div class="flex-1">
+                    <div class="breadcrumb mb-2">
+                        <a href="dashboard1.html">Dashboard</a>
+                        <i class="fas fa-chevron-right text-[10px]"></i>
+                        <a href="#" onclick="closeModal();return false;">Reportes</a>
+                        <i class="fas fa-chevron-right text-[10px]"></i>
+                        <span class="current">Detalle</span>
+                    </div>
+                    <h2 id="modal-title" class="text-3xl font-black text-blue-900 italic"></h2>
+                </div>
+                <button onclick="closeModal()" class="text-3xl text-slate-400 hover:text-slate-900 ml-4">&times;</button>
+            </div>
+            <div id="modal-content" class="space-y-6"></div>
+            <div id="modal-actions" class="flex gap-3 mt-8"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Menu Button -->
+<button onclick="toggleMobileMenu()" class="md:hidden fixed top-4 left-4 z-50 bg-blue-900 text-white p-3 rounded-xl shadow-lg">
+    <i class="fas fa-bars text-xl"></i>
+</button>
+
+<div id="mobile-overlay" onclick="toggleMobileMenu()" class="md:hidden fixed inset-0 bg-black/50 z-40 opacity-0 pointer-events-none transition-opacity"></div>
+
+<div class="flex flex-1">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-72 bg-blue-900 text-white p-8 flex flex-col fixed md:sticky top-0 h-screen shadow-2xl z-40 -translate-x-full md:translate-x-0 transition-transform duration-300">
+        <button onclick="toggleMobileMenu()" class="md:hidden absolute top-4 right-4 text-white text-2xl"><i class="fas fa-times"></i></button>
+
+        <div class="flex items-center gap-3 mb-12">
+            <div class="bg-white text-blue-900 p-1.5 rounded-lg font-black text-xl shadow-lg">AR</div>
+            <span class="font-black text-xl uppercase italic tracking-tighter">Aguadilla</span>
+        </div>
+        
+        <nav class="space-y-6 flex-1">
+            <a href="dashboard1.html" class="sidebar-link flex items-center gap-4 opacity-70 hover:opacity-100 transition-all p-2">
+                <i class="fas fa-chart-pie w-6 text-lg"></i> DASHBOARD
+                <kbd class="ml-auto text-[9px] bg-blue-800 px-2 py-1 rounded opacity-50">G</kbd>
+            </a>
+            <a href="reportes1.html" class="sidebar-link flex items-center gap-4 bg-blue-800 p-4 rounded-2xl shadow-lg">
+                <i class="fas fa-clipboard-list w-6 text-lg"></i> REPORTES
+                <kbd class="ml-auto text-[9px] bg-blue-700 px-2 py-1 rounded">R</kbd>
+            </a>
+            <a href="mapa1.html" class="sidebar-link flex items-center gap-4 opacity-70 hover:opacity-100 transition-all p-2">
+                <i class="fas fa-map-marked-alt w-6 text-lg"></i> MAPA
+                <kbd class="ml-auto text-[9px] bg-blue-800 px-2 py-1 rounded opacity-50">M</kbd>
+            </a>
+        </nav>
+
+        <!-- Recent Activity -->
+        <div class="mb-6 p-4 bg-blue-800/30 rounded-xl">
+            <h4 class="text-[9px] font-black uppercase tracking-widest mb-3 text-blue-300">📌 Última Actividad</h4>
+            <div id="recent-activity" class="space-y-2 text-xs"></div>
+        </div>
+        
+        <div class="border-t border-blue-800 pt-6 space-y-4">
+            <div class="bg-blue-800/50 rounded-2xl p-4">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="bg-blue-700 w-10 h-10 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs font-black text-white truncate" id="user-name">Empleado</p>
+                        <p class="text-[9px] text-blue-300 truncate" id="user-email">email@aguadilla.com</p>
+                    </div>
+                </div>
+            </div>
             
-            if (sidebar.classList.contains('-translate-x-full')) {
-                sidebar.classList.remove('-translate-x-full');
-                sidebar.classList.add('translate-x-0');
-                overlay.classList.remove('opacity-0', 'pointer-events-none');
-                overlay.classList.add('opacity-100', 'pointer-events-auto');
-            } else {
-                sidebar.classList.add('-translate-x-full');
-                sidebar.classList.remove('translate-x-0');
-                overlay.classList.add('opacity-0', 'pointer-events-none');
-                overlay.classList.remove('opacity-100', 'pointer-events-auto');
-            }
-        }
+            <button onclick="cerrarSesion()" class="btn-logout w-full bg-red-600 hover:bg-red-700 text-white p-3 rounded-2xl shadow-lg flex items-center justify-center gap-2 font-black text-sm uppercase tracking-wider">
+                <i class="fas fa-sign-out-alt"></i>Cerrar Sesión
+            </button>
+        </div>
+        
+        <div class="pt-4 text-[10px] font-black text-blue-400 uppercase tracking-widest italic text-center">Ultimate Edition v1.0</div>
+    </aside>
 
-        window.onload = function() {
-            verificarSesion();
-            cargarDatos();
-        };
+    <main class="flex-1 p-4 md:p-8 w-full">
+        <!-- Header -->
+        <header class="mb-8">
+            <div class="breadcrumb mb-4">
+                <a href="dashboard1.html">Dashboard</a>
+                <i class="fas fa-chevron-right text-[10px]"></i>
+                <span class="current">Reportes</span>
+            </div>
 
-        function verificarSesion() {
-            const session = JSON.parse(localStorage.getItem('user_session') || 'null');
-            
-            if (!session || !session.email) {
-                window.location.href = 'index.html';
-                return;
-            }
-
-            if (session.rol !== 'empleado' && session.rol !== 'admin') {
-                window.location.href = 'index.html';
-                return;
-            }
-
-            document.getElementById('user-name').textContent = `${session.nombre} ${session.apellido}`;
-            document.getElementById('user-email').textContent = session.email;
-        }
-
-        function cerrarSesion() {
-            if (confirm('¿Estás seguro que deseas cerrar sesión?')) {
-                localStorage.removeItem('user_session');
-                window.location.href = 'index.html';
-            }
-        }
-
-        function calcularDias(fechaStr) {
-            const fechaReporte = new Date(fechaStr);
-            const hoy = new Date();
-            const diferencia = hoy - fechaReporte;
-            const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
-            return dias <= 0 ? "Hoy" : `Hace ${dias} días`;
-        }
-
-        async function cargarDatos() {
-            const tbody = document.getElementById('tabla-body');
-            tbody.innerHTML = '<tr><td colspan="6" class="p-20 text-center"><i class="fas fa-spinner fa-spin text-4xl text-blue-900"></i></td></tr>';
-            
-            try {
-                const res = await fetch(SCRIPT_URL);
-                const reportes = await res.json();
-                tbody.innerHTML = '';
-
-                reportes.forEach(rep => {
-                    // Manejar ID: si ya tiene "AG-" no agregar, si no lo tiene agregarlo
-                    let idDisplay = rep.id_reporte;
-                    if (!idDisplay.toString().startsWith('AG-')) {
-                        idDisplay = 'AG-' + idDisplay;
-                    }
-                    
-                    // ID limpio para usar en funciones (sin "AG-")
-                    const idLimpio = rep.id_reporte.toString().replace('AG-', '');
-                    
-                    const diasEspera = calcularDias(rep.fecha);
-                    
-                    const fila = `
-                        <tr class="reporte-fila bg-white shadow-sm hover:shadow-md transition-all group" data-estatus="${rep.estatus}">
-                            <td class="px-4 md:px-8 py-7 text-center">
-                                <span class="text-blue-900 font-black text-base md:text-lg block tracking-tighter">${idDisplay}</span>
-                                <select id="prio-${idLimpio}" class="text-[10px] bg-slate-100 font-black rounded-lg px-2 md:px-3 py-1 mt-2 uppercase border-2 border-transparent focus:border-blue-900 outline-none w-full">
-                                    <option value="Baja" ${rep.prioridad === 'Baja' ? 'selected' : ''}>Baja</option>
-                                    <option value="Media" ${rep.prioridad === 'Media' ? 'selected' : ''}>Media</option>
-                                    <option value="Alta" ${rep.prioridad === 'Alta' ? 'selected' : ''}>Alta</option>
-                                </select>
-                            </td>
-                            <td class="px-4 md:px-8 py-7">
-                                <p class="font-black text-slate-800 text-sm md:text-base mb-1">${rep.usuario || rep.ciudadano_nombre || rep.cuidadano_tel || 'Usuario'}</p>
-                                <span class="bg-orange-100 text-orange-600 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter">${diasEspera}</span>
-                            </td>
-                            <td class="px-4 md:px-8 py-7 text-center">
-                                <div class="flex flex-col items-center gap-2">
-                                    <button onclick="${rep.foto_url && rep.foto_url.trim() !== '' && !rep.foto_url.includes('undefined') ? `window.open('${rep.foto_url}')` : `alert('No hay foto disponible para este reporte')`}" class="bg-slate-100 hover:bg-blue-100 text-blue-900 w-10 h-10 md:w-12 md:h-12 rounded-2xl transition-all shadow-sm border border-slate-200 ${rep.foto_url && rep.foto_url.trim() !== '' && !rep.foto_url.includes('undefined') ? '' : 'opacity-50 cursor-not-allowed'}">
-                                        <i class="fas fa-camera text-lg md:text-xl"></i>
-                                    </button>
-                                    <span class="text-[10px] md:text-xs font-bold text-slate-500 italic">${rep.categoría || rep.categoria || 'Sin categoría'}</span>
-                                </div>
-                            </td>
-                            <td class="px-4 md:px-8 py-7 text-center">
-                                <p class="text-xs md:text-sm font-bold text-slate-600 mb-3">${rep.ubicación || rep.ubicacion || 'Sin ubicación'}</p>
-                                <button onclick="${rep.latitud && rep.longitud ? `window.open('https://www.google.com/maps/search/?api=1&query=${rep.latitud},${rep.longitud}')` : `window.open('https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((rep.ubicación || rep.ubicacion || 'Aguadilla') + ', Aguadilla, PR')}')`}" class="text-red-500 hover:scale-125 transition-transform">
-                                    <i class="fas fa-map-location-dot text-xl md:text-2xl"></i>
-                                </button>
-                            </td>
-                            <td class="px-4 md:px-8 py-7 text-center">
-                                <span id="status-${idLimpio}" class="bg-blue-50 text-blue-900 px-4 md:px-6 py-2 rounded-xl text-[10px] md:text-[11px] font-black border border-blue-100 shadow-sm uppercase tracking-widest">${rep.estatus}</span>
-                            </td>
-                            <td class="px-4 md:px-8 py-7 text-center">
-                                <div class="flex gap-2 justify-center flex-col md:flex-row">
-                                    <select id="sel-${idLimpio}" class="bg-slate-50 border-2 border-slate-200 rounded-xl px-2 md:px-3 py-2 text-[10px] md:text-xs font-black text-slate-700 focus:border-blue-900 outline-none transition-all w-full md:w-auto">
-                                        <option value="Nuevo" ${rep.estatus === 'Nuevo' ? 'selected' : ''}>NUEVO</option>
-                                        <option value="Pendiente" ${rep.estatus === 'Pendiente' ? 'selected' : ''}>PENDIENTE</option>
-                                        <option value="En Revisión" ${rep.estatus === 'En Revisión' ? 'selected' : ''}>EN REVISIÓN</option>
-                                        <option value="Completado" ${rep.estatus === 'Completado' ? 'selected' : ''}>COMPLETADO</option>
-                                    </select>
-                                    <button onclick="actualizar('${rep.id_reporte}')" class="bg-blue-900 text-white px-4 md:px-5 py-2 rounded-xl hover:bg-blue-700 shadow-lg transition-all active:scale-95 font-black text-xs w-full md:w-auto">SAVE</button>
-                                </div>
-                            </td>
-                        </tr>`;
-                    tbody.insertAdjacentHTML('beforeend', fila);
-                });
-            } catch (e) { console.error(e); }
-        }
-
-        async function actualizar(id) {
-            const btn = event.currentTarget;
-            
-            // Limpiar ID: quitar "AG-" si existe para acceder a los elementos del DOM
-            const idLimpio = id.toString().replace('AG-', '');
-            
-            const estatusElement = document.getElementById(`sel-${idLimpio}`);
-            const prioridadElement = document.getElementById(`prio-${idLimpio}`);
-            
-            if (!estatusElement || !prioridadElement) {
-                console.error('No se encontraron los elementos para el ID:', id);
-                alert('Error: No se pudieron cargar los campos del reporte');
-                return;
-            }
-            
-            const estatus = estatusElement.value;
-            const prioridad = prioridadElement.value;
-            
-            // Obtener usuario de la sesión para AuditLog
-            const session = JSON.parse(localStorage.getItem('user_session') || 'null');
-            const usuario = session ? session.email : 'Desconocido';
-            
-            btn.innerHTML = '<i class="fas fa-sync fa-spin"></i>';
-            btn.disabled = true;
-            
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ 
-                        action: 'updateStatus', 
-                        id,  // Enviar ID completo al script
-                        estatus, 
-                        prioridad,
-                        usuario  // Enviado para AuditLog
-                    })
-                });
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6">
+                <div>
+                    <h1 class="text-3xl md:text-5xl font-black text-slate-800 tracking-tighter italic uppercase">Gestión de Reportes</h1>
+                    <p class="text-blue-600 font-black text-xs mt-2 uppercase tracking-[0.3em]">Consola Operativa Municipal</p>
+                </div>
                 
-                // Verificar que la respuesta sea OK
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
-                const data = await response.json();
-                
-                // Verificar el resultado
-                if (data.result === 'success') {
-                    // Actualizar el display del estatus
-                    const statusDisplay = document.getElementById(`status-${idLimpio}`);
-                    if (statusDisplay) {
-                        statusDisplay.innerText = estatus;
-                    }
-                    
-                    // Cambiar botón a verde temporalmente
-                    btn.innerHTML = '<i class="fas fa-check"></i>';
-                    btn.classList.remove('bg-blue-900');
-                    btn.classList.add('bg-green-600');
-                    
-                    setTimeout(() => {
-                        btn.innerHTML = 'SAVE';
-                        btn.classList.remove('bg-green-600');
-                        btn.classList.add('bg-blue-900');
-                        btn.disabled = false;
-                    }, 2000);
-                } else {
-                    throw new Error(data.message || 'Error desconocido');
-                }
-                
-            } catch (error) {
-                console.error('Error al actualizar:', error);
-                alert('Error al actualizar el reporte. Por favor, intenta de nuevo.');
-                btn.innerHTML = 'SAVE';
-                btn.disabled = false;
-            }
-        }
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="toggleFocusMode()" class="bg-white text-slate-700 px-4 py-2 rounded-xl shadow-md hover:shadow-lg transition text-xs font-black uppercase" title="Focus (F)">
+                        <i class="fas fa-eye mr-2"></i><span class="hidden sm:inline">Focus</span>
+                    </button>
+                    <button onclick="exportarReportes()" class="bg-white text-slate-700 px-4 py-2 rounded-xl shadow-md hover:shadow-lg transition text-xs font-black uppercase" title="Exportar (E)">
+                        <i class="fas fa-download mr-2"></i><span class="hidden sm:inline">Exportar</span>
+                    </button>
+                    <div class="bg-white px-4 py-2 rounded-2xl shadow-sm border flex items-center gap-3">
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-ping"></span>
+                        <span class="text-[10px] font-black text-slate-500 uppercase" id="sync-status">Live</span>
+                    </div>
+                    <button onclick="cargarReportes()" class="bg-blue-900 text-white px-4 py-2 rounded-xl shadow-lg hover:bg-blue-800 transition text-xs font-black uppercase">
+                        <i class="fas fa-sync-alt mr-2" id="sync-icon"></i><span class="hidden sm:inline">Refrescar</span>
+                    </button>
+                </div>
+            </div>
 
-        function filtrar(val) {
-            document.querySelectorAll('.reporte-fila').forEach(tr => {
-                tr.style.display = (val === 'Todos' || tr.getAttribute('data-estatus') === val) ? '' : 'none';
-            });
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-        }
-    </script>
+            <!-- Filters -->
+            <div class="flex gap-2 flex-wrap">
+                <button data-filter="Todos" class="filter-btn active px-4 py-2 rounded-xl text-xs font-black uppercase bg-slate-100 text-slate-600 border-2 border-transparent">Todos</button>
+                <button data-filter="Nuevo" class="filter-btn px-4 py-2 rounded-xl text-xs font-black uppercase bg-slate-100 text-slate-600 border-2 border-transparent">Nuevos</button>
+                <button data-filter="Pendiente" class="filter-btn px-4 py-2 rounded-xl text-xs font-black uppercase bg-slate-100 text-slate-600 border-2 border-transparent">Pendientes</button>
+                <button data-filter="En Revisión" class="filter-btn px-4 py-2 rounded-xl text-xs font-black uppercase bg-slate-100 text-slate-600 border-2 border-transparent">En Revisión</button>
+                <button data-filter="Completado" class="filter-btn px-4 py-2 rounded-xl text-xs font-black uppercase bg-slate-100 text-slate-600 border-2 border-transparent">Completados</button>
+            </div>
+        </header>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white p-4 rounded-2xl shadow-sm">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Total</p>
+                <p id="stat-total" class="text-3xl font-black text-slate-800">0</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Pendientes</p>
+                <p id="stat-pendientes" class="text-3xl font-black text-orange-600">0</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm">
+                <p class="text-[10px] font-black text-slate-400 uppercase">En Revisión</p>
+                <p id="stat-revision" class="text-3xl font-black text-blue-600">0</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Completados</p>
+                <p id="stat-completados" class="text-3xl font-black text-green-600">0</p>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="bg-white rounded-3xl shadow-xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full" style="min-width:1000px">
+                    <thead class="bg-slate-50">
+                        <tr class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            <th class="p-4 text-left">ID</th>
+                            <th class="p-4 text-left">Ciudadano</th>
+                            <th class="p-4 text-left">Categoría</th>
+                            <th class="p-4 text-left">Ubicación</th>
+                            <th class="p-4 text-center">Estatus</th>
+                            <th class="p-4 text-center">Prioridad</th>
+                            <th class="p-4 text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-reportes" class="text-sm"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Quick Actions -->
+<div class="quick-actions">
+    <button class="quick-btn" onclick="openCommandPalette()" title="Buscar (/)">
+        <i class="fas fa-search"></i>
+    </button>
+    <button class="quick-btn" onclick="showShortcuts()" title="Atajos (?)">
+        <i class="fas fa-keyboard"></i>
+    </button>
+</div>
+
+<script>
+const SCRIPT_URL="https://script.google.com/macros/s/AKfycbwf6zkn7u0PO3t9TPkVG2NjoDwRF7-BuSAtP4T0PXaDStulKQBJOXqzWFwm5Nqh6LP-jA/exec";
+let allReportes=[],filteredReportes=[],currentFilter='Todos',focusMode=false,userSession=null;
+
+window.onload=()=>{verificarSesion();cargarReportes();setupFilters();setupKeyboardShortcuts();updateRecentActivity();checkURLParams()};
+
+function verificarSesion(){userSession=JSON.parse(localStorage.getItem('user_session')||'null');if(!userSession||!userSession.email){window.location.href='index.html';return}if(userSession.rol!=='empleado'&&userSession.rol!=='admin'){window.location.href='index.html';return}document.getElementById('user-name').textContent=`${userSession.nombre} ${userSession.apellido}`;document.getElementById('user-email').textContent=userSession.email}
+
+function cerrarSesion(){if(confirm('¿Cerrar sesión?')){localStorage.removeItem('user_session');window.location.href='index.html'}}
+
+function toggleMobileMenu(){const sidebar=document.getElementById('sidebar'),overlay=document.getElementById('mobile-overlay');sidebar.classList.toggle('-translate-x-full');sidebar.classList.toggle('translate-x-0');overlay.classList.toggle('opacity-0');overlay.classList.toggle('pointer-events-none');overlay.classList.toggle('opacity-100');overlay.classList.toggle('pointer-events-auto')}
+
+function setupKeyboardShortcuts(){document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;switch(e.key.toLowerCase()){case'g':window.location.href='dashboard1.html';break;case'r':window.location.href='reportes1.html';break;case'm':window.location.href='mapa1.html';break;case'/':e.preventDefault();openCommandPalette();break;case'f':toggleFocusMode();break;case'e':exportarReportes();break;case'?':showShortcuts();break;case'escape':closeModal();closeCommandPalette();break}})}
+
+function showShortcuts(){document.getElementById('shortcuts-help').classList.add('active')}
+function closeShortcuts(){document.getElementById('shortcuts-help').classList.remove('active')}
+
+function openCommandPalette(){document.getElementById('command-palette').classList.add('active');document.getElementById('command-input').focus();updateCommandResults('')}
+
+function closeCommandPalette(){document.getElementById('command-palette').classList.remove('active');document.getElementById('command-input').value=''}
+
+document.getElementById('command-input')?.addEventListener('input',e=>updateCommandResults(e.target.value));
+document.getElementById('command-input')?.addEventListener('keydown',e=>{if(e.key==='Escape')closeCommandPalette()});
+
+function updateCommandResults(query){if(!query){const html=`
+<div onclick="window.location.href='dashboard1.html'" class="p-4 hover:bg-slate-50 cursor-pointer flex items-center gap-3 border-b"><i class="fas fa-chart-pie text-blue-900"></i><span class="font-bold text-sm">Ir a Dashboard</span></div>
+<div onclick="window.location.href='mapa1.html'" class="p-4 hover:bg-slate-50 cursor-pointer flex items-center gap-3 border-b"><i class="fas fa-map-marked-alt text-blue-900"></i><span class="font-bold text-sm">Ir a Mapa</span></div>
+<div onclick="exportarReportes();closeCommandPalette()" class="p-4 hover:bg-slate-50 cursor-pointer flex items-center gap-3 border-b"><i class="fas fa-download text-blue-900"></i><span class="font-bold text-sm">Exportar Reportes</span></div>
+`;document.getElementById('command-results').innerHTML=html;return}const matches=allReportes.filter(r=>r.id_reporte.toLowerCase().includes(query.toLowerCase())||(r.categoría&&r.categoría.toLowerCase().includes(query.toLowerCase()))||(r.ubicación&&r.ubicación.toLowerCase().includes(query.toLowerCase()))||(r.nombre&&r.nombre.toLowerCase().includes(query.toLowerCase())));const html=matches.slice(0,8).map(r=>`<div onclick="showReporteDetail('${r.id_reporte}');closeCommandPalette()" class="p-4 hover:bg-slate-50 cursor-pointer border-b"><div class="font-black text-sm text-blue-900">${r.id_reporte}</div><div class="text-xs text-slate-600">${r.categoría||'Sin categoría'} • ${r.ubicación||'Sin ubicación'}</div></div>`).join('')||'<div class="p-4 text-center text-slate-400">No se encontraron resultados</div>';document.getElementById('command-results').innerHTML=html}
+
+function toggleFocusMode(){focusMode=!focusMode;document.body.classList.toggle('focus-mode')}
+
+function updateRecentActivity(){const activity=(localStorage.getItem('recent_activity')||'').split(',').filter(Boolean).slice(0,3),html=activity.map(id=>`<div class="text-blue-300 hover:text-white cursor-pointer" onclick="showReporteDetail('${id}')"><i class="fas fa-file-alt mr-2 text-[10px]"></i>${id}</div>`).join('');document.getElementById('recent-activity').innerHTML=html||'<p class="text-blue-400 text-[10px]">Sin actividad</p>'}
+
+function addToRecentActivity(id){const activity=(localStorage.getItem('recent_activity')||'').split(',').filter(Boolean);activity.unshift(id);localStorage.setItem('recent_activity',[...new Set(activity)].slice(0,10).join(','));updateRecentActivity()}
+
+function checkURLParams(){const params=new URLSearchParams(window.location.search),id=params.get('id');if(id){setTimeout(()=>showReporteDetail(id),500)}}
+
+function setupFilters(){document.querySelectorAll('.filter-btn').forEach(btn=>btn.addEventListener('click',function(){document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active');currentFilter=this.dataset.filter;aplicarFiltro()}))}
+
+async function cargarReportes(){const syncIcon=document.getElementById('sync-icon');syncIcon.classList.add('fa-spin');try{const res=await fetch(SCRIPT_URL);allReportes=await res.json();aplicarFiltro();const ahora=new Date();document.getElementById('sync-status').textContent=ahora.getHours()+':'+ahora.getMinutes().toString().padStart(2,'0')}catch(e){console.error(e);alert('Error al cargar reportes')}finally{syncIcon.classList.remove('fa-spin')}}
+
+function aplicarFiltro(){if(currentFilter==='Todos'){filteredReportes=allReportes}else{filteredReportes=allReportes.filter(r=>r.estatus===currentFilter)}updateStats();renderTabla()}
+
+function updateStats(){document.getElementById('stat-total').textContent=filteredReportes.length;document.getElementById('stat-pendientes').textContent=allReportes.filter(r=>r.estatus==='Pendiente').length;document.getElementById('stat-revision').textContent=allReportes.filter(r=>r.estatus==='En Revisión').length;document.getElementById('stat-completados').textContent=allReportes.filter(r=>r.estatus==='Completado').length}
+
+function renderTabla(){const html=filteredReportes.map(r=>{const idLimpio=r.id_reporte.replace('AG-','');return`<tr class="border-b hover:bg-slate-50 transition" id="row-${idLimpio}"><td class="p-4"><span class="text-blue-900 font-black italic uppercase text-xs cursor-pointer hover:underline" onclick="showReporteDetail('${r.id_reporte}')">${r.id_reporte}</span></td><td class="p-4 text-xs font-bold">${r.nombre||'Sin nombre'}</td><td class="p-4 text-xs">${r.categoría||r.categoria||'Sin categoría'}</td><td class="p-4 text-xs text-slate-500">${r.ubicación||r.ubicacion||'Sin ubicación'}</td><td class="p-4 text-center"><select id="sel-${idLimpio}" class="px-3 py-1 rounded-full text-[10px] font-black uppercase border-2 ${getEstatusColor(r.estatus)}" onchange="markChanged('${idLimpio}')"><option value="Nuevo" ${r.estatus==='Nuevo'?'selected':''}>Nuevo</option><option value="Pendiente" ${r.estatus==='Pendiente'?'selected':''}>Pendiente</option><option value="En Revisión" ${r.estatus==='En Revisión'?'selected':''}>En Revisión</option><option value="Completado" ${r.estatus==='Completado'?'selected':''}>Completado</option></select></td><td class="p-4 text-center"><select id="prio-${idLimpio}" class="px-3 py-1 rounded-full text-[10px] font-black uppercase border-2 ${getPrioridadColor(r.prioridad||'Media')}" onchange="markChanged('${idLimpio}')"><option value="Baja" ${r.prioridad==='Baja'?'selected':''}>Baja</option><option value="Media" ${(!r.prioridad||r.prioridad==='Media')?'selected':''}>Media</option><option value="Alta" ${r.prioridad==='Alta'?'selected':''}>Alta</option></select></td><td class="p-4 text-center"><button id="btn-${idLimpio}" onclick="actualizar('${r.id_reporte}')" class="bg-blue-900 text-white px-4 py-2 rounded-xl text-xs font-black uppercase hover:bg-blue-800 transition">SAVE</button></td></tr>`}).join('');document.getElementById('tabla-reportes').innerHTML=html||'<tr><td colspan="7" class="p-8 text-center text-slate-400 font-bold">No hay reportes</td></tr>'}
+
+function getEstatusColor(estatus){const colors={'Nuevo':'bg-red-50 text-red-600 border-red-200','Pendiente':'bg-orange-50 text-orange-600 border-orange-200','En Revisión':'bg-blue-50 text-blue-600 border-blue-200','Completado':'bg-green-50 text-green-600 border-green-200'};return colors[estatus]||'bg-slate-50 text-slate-600 border-slate-200'}
+
+function getPrioridadColor(prioridad){const colors={'Baja':'bg-slate-50 text-slate-600 border-slate-200','Media':'bg-yellow-50 text-yellow-700 border-yellow-200','Alta':'bg-red-50 text-red-600 border-red-200'};return colors[prioridad]||colors['Media']}
+
+function markChanged(id){const btn=document.getElementById(`btn-${id}`);btn.classList.remove('bg-blue-900');btn.classList.add('bg-green-600','animate-pulse');btn.innerHTML='<i class="fas fa-save mr-1"></i>GUARDAR'}
+
+async function actualizar(id){const btn=event.currentTarget,idLimpio=id.replace('AG-',''),estatusElement=document.getElementById(`sel-${idLimpio}`),prioridadElement=document.getElementById(`prio-${idLimpio}`);if(!estatusElement||!prioridadElement){alert('Error: elementos no encontrados');return}const estatus=estatusElement.value,prioridad=prioridadElement.value,usuario=userSession?userSession.email:'Desconocido';btn.innerHTML='<i class="fas fa-sync fa-spin"></i>';btn.disabled=true;try{const response=await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateStatus',id,estatus,prioridad,usuario})});if(!response.ok)throw new Error(`HTTP ${response.status}`);const data=await response.json();if(data.result==='success'){btn.innerHTML='<i class="fas fa-check"></i>';btn.classList.remove('bg-green-600','animate-pulse');btn.classList.add('bg-green-700');setTimeout(()=>{btn.innerHTML='SAVE';btn.classList.remove('bg-green-700');btn.classList.add('bg-blue-900');btn.disabled=false},2000);const row=document.getElementById(`row-${idLimpio}`);if(row){row.classList.add('row-highlight')}}else{throw new Error(data.message||'Error')}}catch(error){console.error(error);alert('Error al actualizar');btn.innerHTML='SAVE';btn.disabled=false}}
+
+function showReporteDetail(id){addToRecentActivity(id);const reporte=allReportes.find(r=>r.id_reporte===id);if(!reporte){alert('Reporte no encontrado');return}document.getElementById('modal-title').textContent=id;const content=`<div class="grid grid-cols-2 gap-4"><div><p class="text-xs font-black text-slate-400 uppercase mb-1">Ciudadano</p><p class="text-sm font-bold">${reporte.nombre||'Sin nombre'}</p></div><div><p class="text-xs font-black text-slate-400 uppercase mb-1">Email</p><p class="text-sm">${reporte.email||'Sin email'}</p></div><div><p class="text-xs font-black text-slate-400 uppercase mb-1">Categoría</p><p class="text-sm font-bold">${reporte.categoría||reporte.categoria||'Sin categoría'}</p></div><div><p class="text-xs font-black text-slate-400 uppercase mb-1">Prioridad</p><p class="text-sm font-bold">${reporte.prioridad||'Media'}</p></div><div><p class="text-xs font-black text-slate-400 uppercase mb-1">Estatus</p><p class="text-sm font-bold">${reporte.estatus}</p></div><div><p class="text-xs font-black text-slate-400 uppercase mb-1">Fecha</p><p class="text-sm">${new Date(reporte.fecha).toLocaleDateString('es-PR')}</p></div><div class="col-span-2"><p class="text-xs font-black text-slate-400 uppercase mb-1">Ubicación</p><p class="text-sm font-bold">${reporte.ubicación||reporte.ubicacion||'Sin ubicación'}</p></div><div class="col-span-2"><p class="text-xs font-black text-slate-400 uppercase mb-1">Descripción</p><p class="text-sm">${reporte.descripción||reporte.descripcion||'Sin descripción'}</p></div>${reporte.foto_url?`<div class="col-span-2"><p class="text-xs font-black text-slate-400 uppercase mb-2">Foto</p><img src="${reporte.foto_url}" alt="Foto" class="w-full rounded-xl"></div>`:''}${reporte.latitud&&reporte.longitud?`<div class="col-span-2"><p class="text-xs font-black text-slate-400 uppercase mb-1">Coordenadas GPS</p><p class="text-sm font-mono">${reporte.latitud}, ${reporte.longitud}</p><button onclick="window.open('https://www.google.com/maps?q=${reporte.latitud},${reporte.longitud}','_blank')" class="mt-2 text-xs text-blue-900 font-bold hover:underline"><i class="fas fa-map-marker-alt mr-1"></i>Ver en Google Maps</button></div>`:''}</div>`;document.getElementById('modal-content').innerHTML=content;document.getElementById('modal-actions').innerHTML=`<button onclick="closeModal()" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-black uppercase text-sm hover:bg-slate-200 transition">Cerrar</button>`;document.getElementById('detail-modal').classList.add('active')}
+
+function closeModal(){document.getElementById('detail-modal').classList.remove('active')}
+
+function exportarReportes(){let csv='ID,Ciudadano,Categoria,Ubicacion,Estatus,Prioridad,Fecha\n';filteredReportes.forEach(r=>csv+=`${r.id_reporte},"${r.nombre||''}","${r.categoría||r.categoria}","${r.ubicación||r.ubicacion}",${r.estatus},${r.prioridad||'Media'},${r.fecha}\n`);const blob=new Blob([csv],{type:'text/csv'}),url=window.URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`aguadilla-reportes-${new Date().toISOString().split('T')[0]}.csv`;a.click();window.URL.revokeObjectURL(url)}
+
+document.getElementById('detail-modal')?.addEventListener('click',e=>{if(e.target.id==='detail-modal')closeModal()});
+document.getElementById('command-palette')?.addEventListener('click',e=>{if(e.target.id==='command-palette')closeCommandPalette()});
+</script>
 </body>
 </html>
