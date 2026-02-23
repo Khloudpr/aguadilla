@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aguadilla Reporta | Sistema Inteligente de Gestión Municipal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+        
+        * { font-family: 'Inter', sans-serif; }
+        
+        body { overflow-x: hidden; }
+        
+        /* Gradient Background */
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .gradient-bg::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: moveGrid 20s linear infinite;
+        }
+        
+        @keyframes moveGrid {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        
+        /* Floating Animation */
+        .float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        /* Fade In Up */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.8s ease forwards;
+        }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .delay-1 { animation-delay: 0.2s; }
+        .delay-2 { animation-delay: 0.4s; }
+        .delay-3 { animation-delay: 0.6s; }
+        .delay-4 { animation-delay: 0.8s; }
+        
+        /* Glass Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .glass-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Pulse Animation */
+        .pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Button Glow */
+        .btn-glow {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-glow::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn-glow:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        /* Counter Animation */
+        .counter {
+            font-variant-numeric: tabular-nums;
+        }
+        
+        /* Smooth Scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Navbar Scroll Effect */
+        .navbar-scrolled {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Step Line */
+        .step-line {
+            position: relative;
+        }
+        
+        .step-line::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, #667eea, transparent);
+        }
+        
+        /* Logo Animation */
+        .logo-shine {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .logo-shine::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(255, 255, 255, 0.3),
+                transparent
+            );
+            animation: shine 3s infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <!-- Navbar -->
+    <nav id="navbar" class="fixed w-full top-0 z-50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo -->
+                <div class="flex items-center gap-4">
+                    <img src="https://khloudpr.github.io/aguadilla/assets/logo-aguadilla.png" alt="Municipio de Aguadilla" class="h-14 w-auto">
+                    <div class="hidden sm:block">
+                        <div class="font-black text-xl text-white" id="nav-title">Aguadilla Reporta</div>
+                        <div class="text-xs text-white/80 font-semibold uppercase tracking-wider">El Jardín del Atlántico</div>
+                    </div>
+                </div>
+                
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="#inicio" class="text-white hover:text-white/80 font-semibold transition">Inicio</a>
+                    <a href="#caracteristicas" class="text-white hover:text-white/80 font-semibold transition">Características</a>
+                    <a href="#como-funciona" class="text-white hover:text-white/80 font-semibold transition">Cómo Funciona</a>
+                    <a href="#contacto" class="text-white hover:text-white/80 font-semibold transition">Contacto</a>
+                    <a href="login.html" class="bg-white text-blue-900 px-6 py-2 rounded-full font-black text-sm hover:bg-blue-50 transition">
+                        Empleados <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <button onclick="toggleMobileMenu()" class="md:hidden text-white text-2xl">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white/95 backdrop-blur">
+            <div class="px-4 py-4 space-y-3">
+                <a href="#inicio" class="block text-slate-800 hover:text-blue-900 font-semibold py-2">Inicio</a>
+                <a href="#caracteristicas" class="block text-slate-800 hover:text-blue-900 font-semibold py-2">Características</a>
+                <a href="#como-funciona" class="block text-slate-800 hover:text-blue-900 font-semibold py-2">Cómo Funciona</a>
+                <a href="#contacto" class="block text-slate-800 hover:text-blue-900 font-semibold py-2">Contacto</a>
+                <a href="login.html" class="block bg-blue-900 text-white text-center px-6 py-3 rounded-full font-black">
+                    Acceso Empleados
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="inicio" class="gradient-bg min-h-screen flex items-center justify-center relative pt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
+            <div class="text-center">
+                <!-- Badge -->
+                <div class="fade-in-up inline-flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-2 rounded-full text-white text-sm font-bold mb-8">
+                    <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                    Sistema en Tiempo Real
+                </div>
+                
+                <!-- Main Title -->
+                <h1 class="fade-in-up delay-1 text-5xl md:text-7xl font-black text-white mb-6 leading-tight">
+                    Tu Voz<br/>
+                    <span class="bg-gradient-to-r from-yellow-300 to-orange-400 bg-clip-text text-transparent">Construye Ciudad</span>
+                </h1>
+                
+                <!-- Subtitle -->
+                <p class="fade-in-up delay-2 text-xl md:text-2xl text-white/90 mb-12 max-w-3xl mx-auto font-medium">
+                    Sistema inteligente de gestión municipal. Reporta incidencias, rastrea soluciones, 
+                    mejora tu comunidad en tiempo real.
+                </p>
+                
+                <!-- CTA Buttons -->
+                <div class="fade-in-up delay-3 flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <a href="aguadilla-reporta-completo.html" class="btn-glow bg-white text-blue-900 px-8 py-4 rounded-full font-black text-lg hover:bg-blue-50 transition shadow-2xl flex items-center gap-3 group">
+                        <i class="fas fa-flag text-2xl"></i>
+                        Reportar Incidencia
+                        <i class="fas fa-arrow-right group-hover:translate-x-1 transition"></i>
+                    </a>
+                    <a href="#como-funciona" class="bg-white/10 backdrop-blur text-white px-8 py-4 rounded-full font-black text-lg hover:bg-white/20 transition border-2 border-white/30">
+                        Ver Demo
+                    </a>
+                </div>
+                
+                <!-- Stats -->
+                <div class="fade-in-up delay-4 grid grid-cols-3 gap-8 mt-20 max-w-3xl mx-auto">
+                    <div class="text-center">
+                        <div class="text-4xl md:text-5xl font-black text-white counter" data-target="1247">0</div>
+                        <div class="text-white/80 text-sm font-semibold mt-2">Reportes Procesados</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl md:text-5xl font-black text-white counter" data-target="24">0</div>
+                        <div class="text-white/80 text-sm font-semibold mt-2">Horas Promedio</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl md:text-5xl font-black text-white counter" data-target="94">0</div>
+                        <div class="text-white/80 text-sm font-semibold mt-2">% Satisfacción</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <i class="fas fa-chevron-down text-white text-2xl pulse-slow"></i>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="caracteristicas" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Section Header -->
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-black text-slate-900 mb-4">
+                    Sistema de <span class="text-blue-900">Última Generación</span>
+                </h2>
+                <p class="text-xl text-slate-600 max-w-2xl mx-auto">
+                    Tecnología avanzada al servicio de la comunidad
+                </p>
+            </div>
+            
+            <!-- Features Grid -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Feature 1 -->
+                <div class="glass-card p-8 rounded-3xl text-center">
+                    <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-6 float">
+                        <i class="fas fa-bolt text-white text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-900 mb-3">Tiempo Real</h3>
+                    <p class="text-slate-600">
+                        Rastrea tu reporte desde el momento que lo envías hasta su resolución completa.
+                    </p>
+                </div>
+                
+                <!-- Feature 2 -->
+                <div class="glass-card p-8 rounded-3xl text-center">
+                    <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl flex items-center justify-center mx-auto mb-6 float">
+                        <i class="fas fa-map-marked-alt text-white text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-900 mb-3">Geolocalización</h3>
+                    <p class="text-slate-600">
+                        GPS preciso para identificar la ubicación exacta de cada incidencia reportada.
+                    </p>
+                </div>
+                
+                <!-- Feature 3 -->
+                <div class="glass-card p-8 rounded-3xl text-center">
+                    <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-700 rounded-2xl flex items-center justify-center mx-auto mb-6 float">
+                        <i class="fas fa-shield-alt text-white text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-900 mb-3">Seguro</h3>
+                    <p class="text-slate-600">
+                        Tus datos están protegidos con encriptación de nivel empresarial.
+                    </p>
+                </div>
+                
+                <!-- Feature 4 -->
+                <div class="glass-card p-8 rounded-3xl text-center">
+                    <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-700 rounded-2xl flex items-center justify-center mx-auto mb-6 float">
+                        <i class="fas fa-mobile-alt text-white text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-900 mb-3">Móvil First</h3>
+                    <p class="text-slate-600">
+                        Diseñado para funcionar perfectamente en cualquier dispositivo.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="como-funciona" class="py-20 bg-gradient-to-br from-slate-50 to-blue-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-black text-slate-900 mb-4">
+                    Simple y <span class="text-blue-900">Efectivo</span>
+                </h2>
+                <p class="text-xl text-slate-600 max-w-2xl mx-auto">
+                    Tres pasos para mejorar tu ciudad
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-12 relative">
+                <!-- Step 1 -->
+                <div class="text-center relative step-line">
+                    <div class="w-20 h-20 bg-gradient-to-br from-blue-600 to-blue-800 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
+                        <span class="text-white text-3xl font-black">1</span>
+                    </div>
+                    <h3 class="text-2xl font-black text-slate-900 mb-3">Reporta</h3>
+                    <p class="text-slate-600 text-lg">
+                        Toma una foto de la incidencia, agrega ubicación y descripción. Toma menos de 2 minutos.
+                    </p>
+                </div>
+                
+                <!-- Step 2 -->
+                <div class="text-center relative step-line">
+                    <div class="w-20 h-20 bg-gradient-to-br from-purple-600 to-purple-800 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
+                        <span class="text-white text-3xl font-black">2</span>
+                    </div>
+                    <h3 class="text-2xl font-black text-slate-900 mb-3">Rastrea</h3>
+                    <p class="text-slate-600 text-lg">
+                        Recibe tu código único de seguimiento. Monitorea el progreso en tiempo real 24/7.
+                    </p>
+                </div>
+                
+                <!-- Step 3 -->
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-gradient-to-br from-green-600 to-green-800 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
+                        <span class="text-white text-3xl font-black">3</span>
+                    </div>
+                    <h3 class="text-2xl font-black text-slate-900 mb-3">Resuelto</h3>
+                    <p class="text-slate-600 text-lg">
+                        Nuestro equipo trabaja en tu reporte. Recibe notificación cuando esté completado.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- CTA -->
+            <div class="text-center mt-16">
+                <a href="aguadilla-reporta-completo.html" class="inline-flex items-center gap-3 bg-blue-900 text-white px-10 py-5 rounded-full font-black text-lg hover:bg-blue-800 transition shadow-2xl">
+                    Comenzar Ahora
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 gradient-bg relative overflow-hidden">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <h2 class="text-4xl md:text-5xl font-black text-white mb-6">
+                ¿Listo para Mejorar Tu Comunidad?
+            </h2>
+            <p class="text-xl text-white/90 mb-10">
+                Únete a miles de ciudadanos que ya están haciendo la diferencia
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="aguadilla-reporta-completo.html" class="bg-white text-blue-900 px-10 py-5 rounded-full font-black text-lg hover:bg-blue-50 transition shadow-2xl">
+                    Portal Ciudadano
+                </a>
+                <a href="login.html" class="bg-white/10 backdrop-blur text-white px-10 py-5 rounded-full font-black text-lg hover:bg-white/20 transition border-2 border-white/30">
+                    Acceso Empleados
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contacto" class="bg-slate-900 text-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-12 mb-12">
+                <!-- Brand -->
+                <div class="md:col-span-2">
+                    <div class="flex items-center gap-4 mb-4">
+                        <img src="https://khloudpr.github.io/aguadilla/assets/logo-aguadilla.png" alt="Municipio de Aguadilla" class="h-14 w-auto">
+                        <div>
+                            <div class="font-black text-xl">Aguadilla Reporta</div>
+                            <div class="text-sm text-slate-400">Sistema Municipal Inteligente</div>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 mb-6 max-w-md">
+                        Plataforma oficial del Municipio de Aguadilla para la gestión de incidencias ciudadanas en tiempo real.
+                    </p>
+                    <div class="flex gap-4">
+                        <a href="https://www.facebook.com/ciudaddeencantos" target="_blank" rel="noopener noreferrer" class="w-10 h-10 bg-slate-800 hover:bg-blue-600 rounded-full flex items-center justify-center transition">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="https://x.com/ciudadaguadilla" target="_blank" rel="noopener noreferrer" class="w-10 h-10 bg-slate-800 hover:bg-blue-600 rounded-full flex items-center justify-center transition">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="https://www.instagram.com/municipiodeaguadilla" target="_blank" rel="noopener noreferrer" class="w-10 h-10 bg-slate-800 hover:bg-blue-600 rounded-full flex items-center justify-center transition">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Links -->
+                <div>
+                    <h4 class="font-black text-lg mb-4">Enlaces</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#inicio" class="text-slate-400 hover:text-white transition">Inicio</a></li>
+                        <li><a href="#caracteristicas" class="text-slate-400 hover:text-white transition">Características</a></li>
+                        <li><a href="#como-funciona" class="text-slate-400 hover:text-white transition">Cómo Funciona</a></li>
+                        <li><a href="aguadilla-reporta-completo.html" class="text-slate-400 hover:text-white transition">Portal Ciudadano</a></li>
+                        <li><a href="login.html" class="text-slate-400 hover:text-white transition">Acceso Empleados</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Legal -->
+                <div>
+                    <h4 class="font-black text-lg mb-4">Legal</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" onclick="showPrivacy()" class="text-slate-400 hover:text-white transition">Política de Privacidad</a></li>
+                        <li><a href="#" onclick="showTerms()" class="text-slate-400 hover:text-white transition">Términos de Uso</a></li>
+                        <li><a href="#" class="text-slate-400 hover:text-white transition">Accesibilidad</a></li>
+                        <li><a href="/cdn-cgi/l/email-protection#f891969e97b8999f8d999c91949499d6888ad69f978e" class="text-slate-400 hover:text-white transition">Contacto</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Bottom Bar -->
+            <div class="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-slate-400 text-sm">
+                    © 2026 Municipio de Aguadilla. Todos los derechos reservados.
+                </p>
+                <p class="text-slate-500 text-xs">
+                    Desarrollado con <i class="fas fa-heart text-red-500"></i> para la comunidad de Aguadilla
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Privacy Modal -->
+    <div id="privacy-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-8">
+            <div class="flex justify-between items-start mb-6">
+                <h3 class="text-3xl font-black text-slate-900">Política de Privacidad</h3>
+                <button onclick="closeModal('privacy-modal')" class="text-3xl text-slate-400 hover:text-slate-900">&times;</button>
+            </div>
+            <div class="prose prose-slate">
+                <p class="text-slate-600 mb-4">
+                    <strong>Última actualización:</strong> Febrero 2026
+                </p>
+                <h4 class="font-bold text-lg mt-4 mb-2">1. Información que Recopilamos</h4>
+                <p class="text-slate-600">
+                    Recopilamos información personal que usted nos proporciona voluntariamente al reportar incidencias, 
+                    incluyendo nombre, email, ubicación GPS y fotografías de las incidencias.
+                </p>
+                <h4 class="font-bold text-lg mt-4 mb-2">2. Uso de la Información</h4>
+                <p class="text-slate-600">
+                    Utilizamos su información exclusivamente para procesar y dar seguimiento a sus reportes de incidencias 
+                    municipales. No compartimos su información con terceros sin su consentimiento.
+                </p>
+                <h4 class="font-bold text-lg mt-4 mb-2">3. Seguridad de Datos</h4>
+                <p class="text-slate-600">
+                    Implementamos medidas de seguridad técnicas y organizativas para proteger sus datos personales contra 
+                    acceso no autorizado, alteración o destrucción.
+                </p>
+                <h4 class="font-bold text-lg mt-4 mb-2">4. Sus Derechos</h4>
+                <p class="text-slate-600">
+                    Usted tiene derecho a acceder, rectificar o eliminar sus datos personales en cualquier momento 
+                    contactando a <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="9ff6f1f9f0dffef8eafefbf6f3f3feb1efedb1f8f0e9">[email&#160;protected]</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms Modal -->
+    <div id="terms-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-8">
+            <div class="flex justify-between items-start mb-6">
+                <h3 class="text-3xl font-black text-slate-900">Términos de Uso</h3>
+                <button onclick="closeModal('terms-modal')" class="text-3xl text-slate-400 hover:text-slate-900">&times;</button>
+            </div>
+            <div class="prose prose-slate">
+                <p class="text-slate-600 mb-4">
+                    <strong>Última actualización:</strong> Febrero 2026
+                </p>
+                <h4 class="font-bold text-lg mt-4 mb-2">1. Aceptación de Términos</h4>
+                <p class="text-slate-600">
+                    Al utilizar Aguadilla Reporta, usted acepta estos términos de uso. Si no está de acuerdo, 
+                    por favor no utilice el servicio.
+                </p>
+                <h4 class="font-bold text-lg mt-4 mb-2">2. Uso Apropiado</h4>
+                <p class="text-slate-600">
+                    Este sistema debe utilizarse únicamente para reportar incidencias municipales legítimas. 
+                    El mal uso o abuso del sistema puede resultar en la suspensión del acceso.
+                </p>
+                <h4 class="font-bold text-lg mt-4 mb-2">3. Responsabilidad del Usuario</h4>
+                <p class="text-slate-600">
+                    Los usuarios son responsables de la veracidad de la información que proporcionan. 
+                    Reportes falsos pueden tener consecuencias legales.
+                </p>
+                <h4 class="font-bold text-lg mt-4 mb-2">4. Disponibilidad del Servicio</h4>
+                <p class="text-slate-600">
+                    Nos esforzamos por mantener el servicio disponible 24/7, pero no garantizamos acceso ininterrumpido. 
+                    Podemos realizar mantenimiento programado con previo aviso.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+        // Navbar Scroll Effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            const navTitle = document.getElementById('nav-title');
+            if (window.scrollY > 100) {
+                navbar.classList.add('navbar-scrolled');
+                navTitle.classList.add('text-slate-900');
+                navTitle.classList.remove('text-white');
+            } else {
+                navbar.classList.remove('navbar-scrolled');
+                navTitle.classList.add('text-white');
+                navTitle.classList.remove('text-slate-900');
+            }
+        });
+
+        // Counter Animation
+        const counters = document.querySelectorAll('.counter');
+        let animated = false;
+
+        const animateCounters = () => {
+            counters.forEach(counter => {
+                const target = parseInt(counter.getAttribute('data-target'));
+                const duration = 2000;
+                const increment = target / (duration / 16);
+                let current = 0;
+
+                const updateCounter = () => {
+                    current += increment;
+                    if (current < target) {
+                        counter.textContent = Math.floor(current);
+                        requestAnimationFrame(updateCounter);
+                    } else {
+                        counter.textContent = target;
+                    }
+                };
+
+                updateCounter();
+            });
+        };
+
+        // Trigger counter animation on scroll
+        window.addEventListener('scroll', () => {
+            if (!animated && window.scrollY > 300) {
+                animateCounters();
+                animated = true;
+            }
+        });
+
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Show Modal
+        function showPrivacy() {
+            document.getElementById('privacy-modal').classList.remove('hidden');
+        }
+
+        function showTerms() {
+            document.getElementById('terms-modal').classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        // Close modals on outside click
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'privacy-modal' || e.target.id === 'terms-modal') {
+                e.target.classList.add('hidden');
+            }
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                
