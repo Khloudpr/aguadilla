@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportar Incidencia | Aguadilla Reporta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+        * { font-family: 'Inter', sans-serif; }
+        
+        /* Gradient Background */
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .gradient-bg::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: moveGrid 20s linear infinite;
+        }
+        
+        @keyframes moveGrid {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        
+        /* Fade In */
+        .fade-in { animation: fadeIn 0.6s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Glass Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Step Indicator */
+        .step { transition: all 0.3s; }
+        .step.active { background: #667eea; color: white; transform: scale(1.1); }
+        .step.completed { background: #22c55e; color: white; }
+        
+        /* Progress Bar */
+        .progress-bar {
+            transition: width 0.5s ease;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        /* Input Focus */
+        .input-focus:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        /* Photo Preview */
+        .photo-preview {
+            position: relative;
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 3px dashed #cbd5e1;
+            transition: all 0.3s;
+        }
+        
+        .photo-preview.has-image {
+            border-style: solid;
+            border-color: #22c55e;
+        }
+        
+        /* Success Animation */
+        @keyframes successPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .success-pulse {
+            animation: successPulse 0.6s ease;
+        }
+        
+        /* Confetti */
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #667eea;
+            animation: confetti-fall 3s linear;
+        }
+        
+        @keyframes confetti-fall {
+            to { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen">
+
+    <!-- Header -->
+    <nav class="relative z-10 bg-white/10 backdrop-blur border-b border-white/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-3">
+                    <img src="https://khloudpr.github.io/aguadilla/assets/logo-aguadilla.png" alt="Aguadilla" class="h-10 w-auto">
+                    <span class="font-black text-white text-lg hidden sm:inline">Aguadilla Reporta</span>
+                </div>
+                <a href="index.html" class="text-white hover:text-white/80 font-bold text-sm">
+                    <i class="fas fa-arrow-left mr-2"></i>Volver
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="max-w-4xl mx-auto px-4 py-8 relative z-10">
+        
+        <!-- Progress Steps -->
+        <div class="mb-8 fade-in">
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex-1">
+                    <div class="h-2 bg-white/20 rounded-full overflow-hidden">
+                        <div id="progress-bar" class="progress-bar h-full" style="width: 25%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-between">
+                <div class="step active w-12 h-12 rounded-full bg-slate-300 flex items-center justify-center font-black text-sm">1</div>
+                <div class="step w-12 h-12 rounded-full bg-slate-300 flex items-center justify-center font-black text-sm">2</div>
+                <div class="step w-12 h-12 rounded-full bg-slate-300 flex items-center justify-center font-black text-sm">3</div>
+                <div class="step w-12 h-12 rounded-full bg-slate-300 flex items-center justify-center font-black text-sm">4</div>
+            </div>
+            <div class="flex justify-between mt-2 text-xs font-bold text-white/80">
+                <span>Info Personal</span>
+                <span>Ubicación</span>
+                <span>Incidencia</span>
+                <span>Confirmación</span>
+            </div>
+        </div>
+
+        <!-- Form Card -->
+        <div class="glass-card rounded-3xl shadow-2xl p-6 md:p-10 fade-in">
+            <form id="report-form">
+                
+                <!-- Step 1: Personal Info -->
+                <div id="step-1" class="step-content">
+                    <h2 class="text-3xl font-black text-slate-900 mb-2">Información Personal</h2>
+                    <p class="text-slate-600 mb-8">Necesitamos saber quién reporta para darle seguimiento</p>
+                    
+                    <div class="space-y-6">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">
+                                    <i class="fas fa-user mr-2 text-blue-600"></i>Nombre
+                                </label>
+                                <input type="text" id="nombre" required class="input-focus w-full px-4 py-3 rounded-xl border-2 border-slate-200 outline-none transition" placeholder="Juan">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">
+                                    <i class="fas fa-user mr-2 text-blue-600"></i>Apellido
+                                </label>
+                                <input type="text" id="apellido" required class="input-focus w-full px-4 py-3 rounded-xl border-2 border-slate-200 outline-none transition" placeholder="Pérez">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">
+                                <i class="fas fa-envelope mr-2 text-blue-600"></i>Correo Electrónico
+                            </label>
+                            <input type="email" id="email" required class="input-focus w-full px-4 py-3 rounded-xl border-2 border-slate-200 outline-none transition" placeholder="tu-email@ejemplo.com">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">
+                                <i class="fas fa-phone mr-2 text-blue-600"></i>Teléfono (opcional)
+                            </label>
+                            <input type="tel" id="telefono" class="input-focus w-full px-4 py-3 rounded-xl border-2 border-slate-200 outline-none transition" placeholder="(787) 123-4567">
+                        </div>
+                    </div>
+                    
+                    <button type="button" onclick="nextStep(1)" class="mt-8 w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-black text-lg hover:from-blue-700 hover:to-purple-700 transition shadow-xl">
+                        Siguiente <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+
+                <!-- Step 2: Location -->
+                <div id="step-2" class="step-content hidden">
+                    <h2 class="text-3xl font-black text-slate-900 mb-2">Ubicación</h2>
+                    <p class="text-slate-600 mb-8">¿Dónde está la incidencia?</p>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">
+                                <i class="fas fa-map-marker-alt mr-2 text-blue-600"></i>Dirección o Lugar
+                            </label>
+                            <input type="text" id="ubicacion" required class="input-focus w-full px-4 py-3 rounded-xl border-2 border-slate-200 outline-none transition" placeholder="Ej: Calle Luna #45, Zona Centro">
+                        </div>
+                        
+                        <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-location-arrow text-blue-600 text-xl mt-1"></i>
+                                <div class="flex-1">
+                                    <h4 class="font-black text-blue-900 mb-1">Ubicación GPS</h4>
+                                    <p class="text-sm text-blue-700 mb-3">Activar GPS para localización precisa</p>
+                                    <button type="button" onclick="getGPS()" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition text-sm">
+                                        <i class="fas fa-crosshairs mr-2"></i>Obtener mi ubicación
+                                    </button>
+                                    <div id="gps-status" class="mt-3 text-sm font-bold text-blue-900"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <input type="hidden" id="latitud">
+                        <input type="hidden" id="longitud">
+                    </div>
+                    
+                    <div class="flex gap-3 mt-8">
+                        <button type="button" onclick="prevStep(2)" class="flex-1 bg-slate-200 text-slate-700 py-4 rounded-xl font-black text-lg hover:bg-slate-300 transition">
+                            <i class="fas fa-arrow-left mr-2"></i>Atrás
+                        </button>
+                        <button type="button" onclick="nextStep(2)" class="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-black text-lg hover:from-blue-700 hover:to-purple-700 transition shadow-xl">
+                            Siguiente <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Incident Details -->
+                <div id="step-3" class="step-content hidden">
+                    <h2 class="text-3xl font-black text-slate-900 mb-2">Detalles de la Incidencia</h2>
+                    <p class="text-slate-600 mb-8">Cuéntanos qué está pasando</p>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">
+                                <i class="fas fa-tag mr-2 text-blue-600"></i>Categoría
+                            </label>
+                            <select id="categoria" required class="input-focus w-full px-4 py-3 rounded-xl border-2 border-slate-200 outline-none transition font-bold">
+                                <option value="">Selecciona una categoría...</option>
+                                <option value="Baches / Hoyos">🚗 Baches / Hoyos</option>
+                                <option value="Alumbrado Público">💡 Alumbrado Público</option>
+                                <option value="Basura / Escombros">🗑️ Basura / Escombros</option>
+                                <option value="Tuberías / Agua">💧 Tuberías / Agua</option>
+                                <option value="Señalización Vial">🚦 Señalización Vial</option>
+                                <option value="Árboles / Vegetación">🌳 Árboles / Vegetación</option>
+                                <option value="Animales Realengos">🐕 Animales Realengos</option>
+                                <option value="Infraestructura Pública">🏗️ Infraestructura Pública</option>
+                                <option value="Otro">❓ Otro</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">
+                                <i class="fas fa-align-left mr-2 text-blue-600"></i>Descripción
+                            </label>
+                            <textarea id="descripcion" required rows="4" class="input-focus w-full px-4 py-3 rounded-xl border-2 border-slate-200 outline-none transition resize-none" placeholder="Describe la incidencia con el mayor detalle posible..."></textarea>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-4">
+                                <i class="fas fa-camera mr-2 text-blue-600"></i>Foto de la Incidencia
+                            </label>
+                            <div id="photo-preview" class="photo-preview aspect-video flex items-center justify-center cursor-pointer" onclick="document.getElementById('foto').click()">
+                                <div id="photo-placeholder" class="text-center">
+                                    <i class="fas fa-camera text-6xl text-slate-300 mb-3"></i>
+                                    <p class="text-slate-500 font-bold">Click para tomar/subir foto</p>
+                                    <p class="text-slate-400 text-sm mt-1">Recomendado para resolver más rápido</p>
+                                </div>
+                                <img id="photo-display" class="hidden w-full h-full object-cover">
+                            </div>
+                            <input type="file" id="foto" accept="image/*" capture="environment" class="hidden" onchange="previewPhoto(event)">
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3 mt-8">
+                        <button type="button" onclick="prevStep(3)" class="flex-1 bg-slate-200 text-slate-700 py-4 rounded-xl font-black text-lg hover:bg-slate-300 transition">
+                            <i class="fas fa-arrow-left mr-2"></i>Atrás
+                        </button>
+                        <button type="button" onclick="nextStep(3)" class="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-black text-lg hover:from-blue-700 hover:to-purple-700 transition shadow-xl">
+                            Siguiente <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Confirmation -->
+                <div id="step-4" class="step-content hidden">
+                    <h2 class="text-3xl font-black text-slate-900 mb-2">Confirma tu Reporte</h2>
+                    <p class="text-slate-600 mb-8">Revisa que todo esté correcto antes de enviar</p>
+                    
+                    <div class="space-y-4 bg-slate-50 rounded-2xl p-6">
+                        <div class="flex justify-between border-b border-slate-200 pb-3">
+                            <span class="text-slate-600 font-bold">Nombre:</span>
+                            <span id="confirm-nombre" class="text-slate-900 font-black"></span>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-200 pb-3">
+                            <span class="text-slate-600 font-bold">Email:</span>
+                            <span id="confirm-email" class="text-slate-900 font-black"></span>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-200 pb-3">
+                            <span class="text-slate-600 font-bold">Ubicación:</span>
+                            <span id="confirm-ubicacion" class="text-slate-900 font-black"></span>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-200 pb-3">
+                            <span class="text-slate-600 font-bold">Categoría:</span>
+                            <span id="confirm-categoria" class="text-slate-900 font-black"></span>
+                        </div>
+                        <div class="border-b border-slate-200 pb-3">
+                            <span class="text-slate-600 font-bold block mb-2">Descripción:</span>
+                            <p id="confirm-descripcion" class="text-slate-900 text-sm"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3 mt-8">
+                        <button type="button" onclick="prevStep(4)" class="flex-1 bg-slate-200 text-slate-700 py-4 rounded-xl font-black text-lg hover:bg-slate-300 transition">
+                            <i class="fas fa-arrow-left mr-2"></i>Atrás
+                        </button>
+                        <button type="submit" id="submit-btn" class="flex-1 bg-gradient-to-r from-green-600 to-green-700 text-white py-4 rounded-xl font-black text-lg hover:from-green-700 hover:to-green-800 transition shadow-xl">
+                            <i class="fas fa-paper-plane mr-2"></i>Enviar Reporte
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-8 text-center success-pulse">
+            <div class="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-check text-white text-4xl"></i>
+            </div>
+            <h3 class="text-3xl font-black text-slate-900 mb-3">¡Reporte Enviado!</h3>
+            <p class="text-slate-600 mb-6">Tu incidencia ha sido registrada exitosamente</p>
+            
+            <div class="bg-blue-50 border-2 border-blue-200 rounded-2xl p-6 mb-6">
+                <p class="text-sm text-slate-600 font-bold mb-2">Tu código de seguimiento:</p>
+                <div class="text-3xl font-black text-blue-900" id="tracking-code">AG-2026-00000</div>
+                <p class="text-xs text-slate-500 mt-2">Guarda este código para rastrear tu reporte</p>
+            </div>
+            
+            <div class="space-y-3">
+                <button onclick="window.location.reload()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black hover:bg-blue-700 transition">
+                    Hacer Otro Reporte
+                </button>
+                <button onclick="window.location.href='index.html'" class="w-full bg-slate-200 text-slate-700 py-3 rounded-xl font-black hover:bg-slate-300 transition">
+                    Volver al Inicio
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwf6zkn7u0PO3t9TPkVG2NjoDwRF7-BuSAtP4T0PXaDStulKQBJOXqzWFwm5Nqh6LP-jA/exec";
+        let currentStep = 1;
+        let photoData = null;
+
+        // Navigation
+        function nextStep(step) {
+            if (!validateStep(step)) return;
+            
+            if (step === 3) {
+                updateConfirmation();
+            }
+            
+            document.getElementById(`step-${step}`).classList.add('hidden');
+            document.getElementById(`step-${step + 1}`).classList.remove('hidden');
+            
+            const steps = document.querySelectorAll('.step');
+            steps[step - 1].classList.remove('active');
+            steps[step - 1].classList.add('completed');
+            steps[step].classList.add('active');
+            
+            currentStep = step + 1;
+            updateProgress();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function prevStep(step) {
+            document.getElementById(`step-${step}`).classList.add('hidden');
+            document.getElementById(`step-${step - 1}`).classList.remove('hidden');
+            
+            const steps = document.querySelectorAll('.step');
+            steps[step - 1].classList.remove('active');
+            steps[step - 2].classList.add('active');
+            steps[step - 2].classList.remove('completed');
+            
+            currentStep = step - 1;
+            updateProgress();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function updateProgress() {
+            const progress = (currentStep / 4) * 100;
+            document.getElementById('progress-bar').style.width = progress + '%';
+        }
+
+        // Validation
+        function validateStep(step) {
+            if (step === 1) {
+                const nombre = document.getElementById('nombre').value.trim();
+                const apellido = document.getElementById('apellido').value.trim();
+                const email = document.getElementById('email').value.trim();
+                
+                if (!nombre || !apellido || !email) {
+                    alert('Por favor completa todos los campos requeridos');
+                    return false;
+                }
+                
+                if (!email.includes('@')) {
+                    alert('Por favor ingresa un email válido');
+                    return false;
+                }
+            }
+            
+            if (step === 2) {
+                const ubicacion = document.getElementById('ubicacion').value.trim();
+                if (!ubicacion) {
+                    alert('Por favor ingresa la ubicación de la incidencia');
+                    return false;
+                }
+            }
+            
+            if (step === 3) {
+                const categoria = document.getElementById('categoria').value;
+                const descripcion = document.getElementById('descripcion').value.trim();
+                
+                if (!categoria || !descripcion) {
+                    alert('Por favor completa la categoría y descripción');
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+
+        // GPS
+        function getGPS() {
+            const status = document.getElementById('gps-status');
+            status.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Obteniendo ubicación...';
+            
+            if ('geolocation' in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        document.getElementById('latitud').value = position.coords.latitude;
+                        document.getElementById('longitud').value = position.coords.longitude;
+                        status.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Ubicación obtenida exitosamente';
+                        status.classList.add('text-green-700');
+                    },
+                    (error) => {
+                        status.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i>No se pudo obtener ubicación';
+                        status.classList.add('text-red-700');
+                    }
+                );
+            } else {
+                status.innerHTML = '<i class="fas fa-times-circle mr-2"></i>GPS no disponible en este dispositivo';
+                status.classList.add('text-red-700');
+            }
+        }
+
+        // Photo Preview
+        function previewPhoto(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    photoData = e.target.result;
+                    document.getElementById('photo-placeholder').classList.add('hidden');
+                    document.getElementById('photo-display').classList.remove('hidden');
+                    document.getElementById('photo-display').src = e.target.result;
+                    document.getElementById('photo-preview').classList.add('has-image');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Update Confirmation
+        function updateConfirmation() {
+            document.getElementById('confirm-nombre').textContent = 
+                document.getElementById('nombre').value + ' ' + document.getElementById('apellido').value;
+            document.getElementById('confirm-email').textContent = document.getElementById('email').value;
+            document.getElementById('confirm-ubicacion').textContent = document.getElementById('ubicacion').value;
+            document.getElementById('confirm-categoria').textContent = document.getElementById('categoria').value;
+            document.getElementById('confirm-descripcion').textContent = document.getElementById('descripcion').value;
+        }
+
+        // Submit Form
+        document.getElementById('report-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enviando...';
+            
+            const formData = {
+                nombre: document.getElementById('nombre').value,
+                apellido: document.getElementById('apellido').value,
+                email: document.getElementById('email').value,
+                telefono: document.getElementById('telefono').value,
+                ubicacion: document.getElementById('ubicacion').value,
+                latitud: document.getElementById('latitud').value,
+                longitud: document.getElementById('longitud').value,
+                categoria: document.getElementById('categoria').value,
+                descripcion: document.getElementById('descripcion').value,
+                foto_url: photoData || '',
+                fecha: new Date().toISOString(),
+                estatus: 'Nuevo',
+                prioridad: 'Media'
+            };
+            
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify(formData)
+                });
+                
+                // Generate tracking code
+                const trackingCode = 'AG-2026-' + String(Math.floor(Math.random() * 90000) + 10000);
+                document.getElementById('tracking-code').textContent = trackingCode;
+                
+                // Show success modal
+                document.getElementById('success-modal').classList.remove('hidden');
+                
+                // Create confetti
+                createConfetti();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Hubo un error al enviar el reporte. Por favor intenta de nuevo.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Enviar Reporte';
+            }
+        });
+
+        // Confetti Effect
+        function createConfetti() {
+            const colors = ['#667eea', '#764ba2', '#22c55e', '#f59e0b', '#ef4444'];
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 2 + 's';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 30);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso Empleados | Aguadilla Reporta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+        
+        * { font-family: 'Inter', sans-serif; }
+        
+        body { overflow-x: hidden; }
+        
+        /* Gradient Background */
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .gradient-bg::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: moveGrid 20s linear infinite;
+        }
+        
+        @keyframes moveGrid {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        
+        /* Float Animation */
+        .float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        /* Fade In */
+        .fade-in {
+            animation: fadeIn 0.8s ease forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Glass Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Input Focus */
+        .input-focus:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        /* Button Glow */
+        .btn-glow {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-glow::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn-glow:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        /* Shake Animation */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .shake {
+            animation: shake 0.5s;
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+
+    <!-- Background Decoration -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
+    </div>
+
+    <!-- Login Container -->
+    <div class="w-full max-w-md relative z-10 fade-in">
+        <!-- Logo & Title -->
+        <div class="text-center mb-8">
+            <div class="flex justify-center mb-4">
+                <img src="https://khloudpr.github.io/aguadilla/assets/logo-aguadilla.png" alt="Municipio de Aguadilla" class="h-20 w-auto float">
+            </div>
+            <h1 class="text-3xl md:text-4xl font-black text-white mb-2">Acceso Empleados</h1>
+            <p class="text-white/80 font-medium">Sistema de Gestión Municipal</p>
+        </div>
+
+        <!-- Login Card -->
+        <div class="glass-card rounded-3xl shadow-2xl p-8">
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <!-- Email Field -->
+                <div class="mb-6">
+                    <label for="email" class="block text-sm font-bold text-slate-700 mb-2">
+                        <i class="fas fa-envelope mr-2 text-blue-600"></i>Correo Electrónico
+                    </label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        required
+                        class="input-focus w-full px-4 py-3 rounded-xl border-2 border-slate-200 outline-none transition font-medium"
+                        placeholder="tu-email@aguadilla.pr.gov"
+                    >
+                </div>
+
+                <!-- Password Field -->
+                <div class="mb-6">
+                    <label for="password" class="block text-sm font-bold text-slate-700 mb-2">
+                        <i class="fas fa-lock mr-2 text-blue-600"></i>Contraseña
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            required
+                            class="input-focus w-full px-4 py-3 rounded-xl border-2 border-slate-200 outline-none transition font-medium pr-12"
+                            placeholder="••••••••"
+                        >
+                        <button 
+                            type="button" 
+                            onclick="togglePassword()"
+                            class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                        >
+                            <i id="password-icon" class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Remember Me & Forgot Password -->
+                <div class="flex items-center justify-between mb-6">
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="remember" class="w-4 h-4 text-blue-600 rounded">
+                        <span class="ml-2 text-sm text-slate-600 font-medium">Recordarme</span>
+                    </label>
+                    <a href="#" onclick="showForgotPassword()" class="text-sm text-blue-600 hover:text-blue-800 font-bold">
+                        ¿Olvidaste tu contraseña?
+                    </a>
+                </div>
+
+                <!-- Error Message -->
+                <div id="error-message" class="hidden mb-4 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
+                    <p class="text-sm text-red-700 font-medium">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        <span id="error-text">Credenciales inválidas</span>
+                    </p>
+                </div>
+
+                <!-- Submit Button -->
+                <button 
+                    type="submit" 
+                    class="btn-glow w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-black text-lg hover:from-blue-700 hover:to-purple-700 transition shadow-xl mb-4"
+                >
+                    <i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión
+                </button>
+
+                <!-- Back to Home -->
+                <a href="index.html" class="block text-center text-slate-600 hover:text-slate-900 font-bold text-sm">
+                    <i class="fas fa-arrow-left mr-2"></i>Volver al Inicio
+                </a>
+            </form>
+        </div>
+
+        <!-- Help Text -->
+        <div class="text-center mt-6">
+            <p class="text-white/60 text-sm">
+                ¿Necesitas ayuda? Contacta a 
+                <a href="mailto:soporte@aguadilla.pr.gov" class="text-white font-bold hover:underline">
+                    soporte@aguadilla.pr.gov
+                </a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgot-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-8 fade-in">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h3 class="text-2xl font-black text-slate-900">Recuperar Contraseña</h3>
+                    <p class="text-slate-600 text-sm mt-2">Te enviaremos instrucciones por correo</p>
+                </div>
+                <button onclick="closeForgotPassword()" class="text-2xl text-slate-400 hover:text-slate-900">
+                    &times;
+                </button>
+            </div>
+            
+            <form onsubmit="handleForgotPassword(event)">
+                <div class="mb-6">
+                    <label for="reset-email" class="block text-sm font-bold text-slate-700 mb-2">
+                        Correo Electrónico
+                    </label>
+                    <input 
+                        type="email" 
+                        id="reset-email" 
+                        required
+                        class="input-focus w-full px-4 py-3 rounded-xl border-2 border-slate-200 outline-none transition"
+                        placeholder="tu-email@aguadilla.pr.gov"
+                    >
+                </div>
+                
+                <button 
+                    type="submit" 
+                    class="w-full bg-blue-600 text-white py-3 rounded-xl font-black hover:bg-blue-700 transition"
+                >
+                    Enviar Instrucciones
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Toggle Password Visibility
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const passwordIcon = document.getElementById('password-icon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                passwordIcon.classList.remove('fa-eye');
+                passwordIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                passwordIcon.classList.remove('fa-eye-slash');
+                passwordIcon.classList.add('fa-eye');
+            }
+        }
+
+        // Show Forgot Password Modal
+        function showForgotPassword() {
+            document.getElementById('forgot-modal').classList.remove('hidden');
+        }
+
+        // Close Forgot Password Modal
+        function closeForgotPassword() {
+            document.getElementById('forgot-modal').classList.add('hidden');
+        }
+
+        // Handle Forgot Password
+        function handleForgotPassword(event) {
+            event.preventDefault();
+            const email = document.getElementById('reset-email').value;
+            
+            // Simulate sending email
+            alert(`Se han enviado instrucciones de recuperación a: ${email}`);
+            closeForgotPassword();
+        }
+
+        // Handle Login
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value.toLowerCase().trim();
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('error-message');
+            const form = document.getElementById('login-form');
+
+            // Mock credentials (replace with real authentication)
+            const validUsers = [
+                { email: 'admin@aguadilla.pr.gov', password: 'admin123', nombre: 'Administrador', apellido: 'Sistema', rol: 'admin' },
+                { email: 'empleado@aguadilla.pr.gov', password: 'empleado123', nombre: 'Empleado', apellido: 'Municipal', rol: 'empleado' }
+            ];
+
+            const user = validUsers.find(u => u.email === email && u.password === password);
+
+            if (user) {
+                // Save session
+                const session = {
+                    email: user.email,
+                    nombre: user.nombre,
+                    apellido: user.apellido,
+                    rol: user.rol,
+                    loginTime: new Date().toISOString()
+                };
+                
+                localStorage.setItem('user_session', JSON.stringify(session));
+
+                // Success animation
+                const submitBtn = event.target.querySelector('button[type="submit"]');
+                submitBtn.innerHTML = '<i class="fas fa-check mr-2"></i>¡Acceso Concedido!';
+                submitBtn.classList.add('bg-green-600');
+
+                // Redirect to dashboard
+                setTimeout(() => {
+                    window.location.href = 'dashboard1.html';
+                }, 1000);
+
+            } else {
+                // Show error
+                errorDiv.classList.remove('hidden');
+                form.classList.add('shake');
+                
+                setTimeout(() => {
+                    form.classList.remove('shake');
+                }, 500);
+
+                // Auto-hide error after 5 seconds
+                setTimeout(() => {
+                    errorDiv.classList.add('hidden');
+                }, 5000);
+            }
+        }
+
+        // Close modal on outside click
+        document.getElementById('forgot-modal')?.addEventListener('click', (e) => {
+            if (e.target.id === 'forgot-modal') {
+                closeForgotPassword();
+            }
+        });
+
+        // Check if already logged in
+        window.onload = () => {
+            const session = localStorage.getItem('user_session');
+            if (session) {
+                const data = JSON.parse(session);
+                if (data.email && data.rol) {
+                    // Already logged in, redirect
+                    window.location.href = 'dashboard1.html';
+                }
+            }
+        };
+    </script>
+</body>
+</html>
