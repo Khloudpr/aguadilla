@@ -130,7 +130,7 @@
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-xs font-black text-white truncate" id="user-name">Empleado</p>
-                        <p class="text-[9px] text-blue-300 truncate" id="user-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="debbb3bfb7b29ebfb9abbfbab7b2b2bff0bdb1b3">[email&#160;protected]</a></p>
+                        <p class="text-[9px] text-blue-300 truncate" id="user-email">email@aguadilla.com</p>
                     </div>
                 </div>
             </div>
@@ -241,62 +241,345 @@
 const SCRIPT_URL="https://script.google.com/macros/s/AKfycbwf6zkn7u0PO3t9TPkVG2NjoDwRF7-BuSAtP4T0PXaDStulKQBJOXqzWFwm5Nqh6LP-jA/exec";
 let allReportes=[],filteredReportes=[],currentFilter='Todos',focusMode=false,userSession=null;
 
-window.onload=()=>{verificarSesion();cargarReportes();setupFilters();setupKeyboardShortcuts();updateRecentActivity();checkURLParams()};
+window.onload = function() {
+    verificarSesion();
+    cargarReportes();
+    setupFilters();
+    setupKeyboardShortcuts();
+    updateRecentActivity();
+    checkURLParams();
+};
 
-function verificarSesion(){userSession=JSON.parse(localStorage.getItem('user_session')||'null');if(!userSession||!userSession.email){window.location.href='index.html';return}if(userSession.rol!=='empleado'&&userSession.rol!=='admin'){window.location.href='index.html';return}document.getElementById('user-name').textContent=`${userSession.nombre} ${userSession.apellido}`;document.getElementById('user-email').textContent=userSession.email}
+function verificarSesion() {
+    userSession = JSON.parse(localStorage.getItem('user_session') || 'null');
+    if (!userSession || !userSession.email) {
+        window.location.href = 'index.html';
+        return;
+    }
+    if (userSession.rol !== 'empleado' && userSession.rol !== 'admin') {
+        window.location.href = 'index.html';
+        return;
+    }
+    document.getElementById('user-name').textContent = `${userSession.nombre} ${userSession.apellido}`;
+    document.getElementById('user-email').textContent = userSession.email;
+}
 
-function cerrarSesion(){if(confirm('¿Cerrar sesión?')){localStorage.removeItem('user_session');window.location.href='index.html'}}
+function cerrarSesion() {
+    if (confirm('¿Cerrar sesión?')) {
+        localStorage.removeItem('user_session');
+        window.location.href = 'index.html';
+    }
+}
 
-function toggleMobileMenu(){const sidebar=document.getElementById('sidebar'),overlay=document.getElementById('mobile-overlay');sidebar.classList.toggle('-translate-x-full');sidebar.classList.toggle('translate-x-0');overlay.classList.toggle('opacity-0');overlay.classList.toggle('pointer-events-none');overlay.classList.toggle('opacity-100');overlay.classList.toggle('pointer-events-auto')}
+function toggleMobileMenu() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('mobile-overlay');
+    sidebar.classList.toggle('-translate-x-full');
+    sidebar.classList.toggle('translate-x-0');
+    overlay.classList.toggle('opacity-0');
+    overlay.classList.toggle('pointer-events-none');
+    overlay.classList.toggle('opacity-100');
+    overlay.classList.toggle('pointer-events-auto');
+}
 
-function setupKeyboardShortcuts(){document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;switch(e.key.toLowerCase()){case'g':window.location.href='dashboard1.html';break;case'r':window.location.href='reportes1.html';break;case'm':window.location.href='mapa1.html';break;case'/':e.preventDefault();openCommandPalette();break;case'f':toggleFocusMode();break;case'e':exportarReportes();break;case'?':showShortcuts();break;case'escape':closeModal();closeCommandPalette();break}})}
+function setupKeyboardShortcuts() {
+    document.addEventListener('keydown', e => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+        switch (e.key.toLowerCase()) {
+            case 'g': window.location.href = 'dashboard1.html'; break;
+            case 'r': window.location.href = 'reportes1.html'; break;
+            case 'm': window.location.href = 'mapa1.html'; break;
+            case '/': e.preventDefault(); openCommandPalette(); break;
+            case 'f': toggleFocusMode(); break;
+            case 'e': exportarReportes(); break;
+            case '?': showShortcuts(); break;
+            case 'escape': closeModal(); closeCommandPalette(); break;
+        }
+    });
+}
 
-function showShortcuts(){document.getElementById('shortcuts-help').classList.add('active')}
-function closeShortcuts(){document.getElementById('shortcuts-help').classList.remove('active')}
+function showShortcuts() {
+    document.getElementById('shortcuts-help').classList.add('active');
+}
 
-function openCommandPalette(){document.getElementById('command-palette').classList.add('active');document.getElementById('command-input').focus();updateCommandResults('')}
+function closeShortcuts() {
+    document.getElementById('shortcuts-help').classList.remove('active');
+}
 
-function closeCommandPalette(){document.getElementById('command-palette').classList.remove('active');document.getElementById('command-input').value=''}
+function openCommandPalette() {
+    document.getElementById('command-palette').classList.add('active');
+    document.getElementById('command-input').focus();
+    updateCommandResults('');
+}
 
-document.getElementById('command-input')?.addEventListener('input',e=>updateCommandResults(e.target.value));
-document.getElementById('command-input')?.addEventListener('keydown',e=>{if(e.key==='Escape')closeCommandPalette()});
+function closeCommandPalette() {
+    document.getElementById('command-palette').classList.remove('active');
+    document.getElementById('command-input').value = '';
+}
 
-function updateCommandResults(query){if(!query){const html=`
+document.getElementById('command-input')?.addEventListener('input', e => updateCommandResults(e.target.value));
+
+function updateCommandResults(query) {
+    if (!query) {
+        const html = `
 <div onclick="window.location.href='dashboard1.html'" class="p-4 hover:bg-slate-50 cursor-pointer flex items-center gap-3 border-b"><i class="fas fa-chart-pie text-blue-900"></i><span class="font-bold text-sm">Ir a Dashboard</span></div>
 <div onclick="window.location.href='mapa1.html'" class="p-4 hover:bg-slate-50 cursor-pointer flex items-center gap-3 border-b"><i class="fas fa-map-marked-alt text-blue-900"></i><span class="font-bold text-sm">Ir a Mapa</span></div>
 <div onclick="exportarReportes();closeCommandPalette()" class="p-4 hover:bg-slate-50 cursor-pointer flex items-center gap-3 border-b"><i class="fas fa-download text-blue-900"></i><span class="font-bold text-sm">Exportar Reportes</span></div>
-`;document.getElementById('command-results').innerHTML=html;return}const matches=allReportes.filter(r=>r.id_reporte.toLowerCase().includes(query.toLowerCase())||(r.categoría&&r.categoría.toLowerCase().includes(query.toLowerCase()))||(r.ubicación&&r.ubicación.toLowerCase().includes(query.toLowerCase()))||(r.nombre&&r.nombre.toLowerCase().includes(query.toLowerCase())));const html=matches.slice(0,8).map(r=>`<div onclick="showReporteDetail('${r.id_reporte}');closeCommandPalette()" class="p-4 hover:bg-slate-50 cursor-pointer border-b"><div class="font-black text-sm text-blue-900">${r.id_reporte}</div><div class="text-xs text-slate-600">${r.categoría||'Sin categoría'} • ${r.ubicación||'Sin ubicación'}</div></div>`).join('')||'<div class="p-4 text-center text-slate-400">No se encontraron resultados</div>';document.getElementById('command-results').innerHTML=html}
+`;
+        document.getElementById('command-results').innerHTML = html;
+        return;
+    }
+    const matches = allReportes.filter(r =>
+        r.id_reporte.toLowerCase().includes(query.toLowerCase()) ||
+        (r.categoría && r.categoría.toLowerCase().includes(query.toLowerCase())) ||
+        (r.ubicación && r.ubicación.toLowerCase().includes(query.toLowerCase())) ||
+        (r.nombre && r.nombre.toLowerCase().includes(query.toLowerCase()))
+    );
+    const html = matches.slice(0, 8).map(r => `
+<div onclick="showReporteDetail('${r.id_reporte}');closeCommandPalette()" class="p-4 hover:bg-slate-50 cursor-pointer border-b">
+    <div class="font-black text-sm text-blue-900">${r.id_reporte}</div>
+    <div class="text-xs text-slate-600">${r.categoría || 'Sin categoría'} • ${r.ubicación || 'Sin ubicación'}</div>
+</div>`).join('') || '<div class="p-4 text-center text-slate-400">No se encontraron resultados</div>';
+    document.getElementById('command-results').innerHTML = html;
+}
 
-function toggleFocusMode(){focusMode=!focusMode;document.body.classList.toggle('focus-mode')}
+function toggleFocusMode() {
+    focusMode = !focusMode;
+    document.body.classList.toggle('focus-mode');
+}
 
-function updateRecentActivity(){const activity=(localStorage.getItem('recent_activity')||'').split(',').filter(Boolean).slice(0,3),html=activity.map(id=>`<div class="text-blue-300 hover:text-white cursor-pointer" onclick="showReporteDetail('${id}')"><i class="fas fa-file-alt mr-2 text-[10px]"></i>${id}</div>`).join('');document.getElementById('recent-activity').innerHTML=html||'<p class="text-blue-400 text-[10px]">Sin actividad</p>'}
+function updateRecentActivity() {
+    const activity = (localStorage.getItem('recent_activity') || '').split(',').filter(Boolean).slice(0, 3);
+    const html = activity.map(id => `<div class="text-blue-300 hover:text-white cursor-pointer" onclick="showReporteDetail('${id}')"><i class="fas fa-file-alt mr-2 text-[10px]"></i>${id}</div>`).join('');
+    document.getElementById('recent-activity').innerHTML = html || '<p class="text-blue-400 text-[10px]">Sin actividad</p>';
+}
 
-function addToRecentActivity(id){const activity=(localStorage.getItem('recent_activity')||'').split(',').filter(Boolean);activity.unshift(id);localStorage.setItem('recent_activity',[...new Set(activity)].slice(0,10).join(','));updateRecentActivity()}
+function addToRecentActivity(id) {
+    const activity = (localStorage.getItem('recent_activity') || '').split(',').filter(Boolean);
+    activity.unshift(id);
+    localStorage.setItem('recent_activity', [...new Set(activity)].slice(0, 10).join(','));
+    updateRecentActivity();
+}
 
-function checkURLParams(){const params=new URLSearchParams(window.location.search),id=params.get('id');if(id){setTimeout(()=>showReporteDetail(id),500)}}
+function checkURLParams() {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    if (id) {
+        setTimeout(() => showReporteDetail(id), 500);
+    }
+}
 
-function setupFilters(){document.querySelectorAll('.filter-btn').forEach(btn=>btn.addEventListener('click',function(){document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active');currentFilter=this.dataset.filter;aplicarFiltro()}))}
+function setupFilters() {
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.addEventListener('click', function() {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentFilter = this.dataset.filter;
+        aplicarFiltro();
+    }));
+}
 
-async function cargarReportes(){const syncIcon=document.getElementById('sync-icon');syncIcon.classList.add('fa-spin');try{const res=await fetch(SCRIPT_URL);allReportes=await res.json();aplicarFiltro();const ahora=new Date();document.getElementById('sync-status').textContent=ahora.getHours()+':'+ahora.getMinutes().toString().padStart(2,'0')}catch(e){console.error(e);alert('Error al cargar reportes')}finally{syncIcon.classList.remove('fa-spin')}}
+async function cargarReportes() {
+    const syncIcon = document.getElementById('sync-icon');
+    syncIcon.classList.add('fa-spin');
+    try {
+        const res = await fetch(SCRIPT_URL);
+        allReportes = await res.json();
+        aplicarFiltro();
+        const ahora = new Date();
+        document.getElementById('sync-status').textContent = ahora.getHours() + ':' + ahora.getMinutes().toString().padStart(2, '0');
+    } catch (e) {
+        console.error(e);
+        alert('Error al cargar reportes');
+    } finally {
+        syncIcon.classList.remove('fa-spin');
+    }
+}
 
-function aplicarFiltro(){if(currentFilter==='Todos'){filteredReportes=allReportes}else{filteredReportes=allReportes.filter(r=>r.estatus===currentFilter)}updateStats();renderTabla()}
+function aplicarFiltro() {
+    if (currentFilter === 'Todos') {
+        filteredReportes = allReportes;
+    } else {
+        filteredReportes = allReportes.filter(r => r.estatus === currentFilter);
+    }
+    updateStats();
+    renderTabla();
+}
 
-function updateStats(){document.getElementById('stat-total').textContent=filteredReportes.length;document.getElementById('stat-pendientes').textContent=allReportes.filter(r=>r.estatus==='Pendiente').length;document.getElementById('stat-revision').textContent=allReportes.filter(r=>r.estatus==='En Revisión').length;document.getElementById('stat-completados').textContent=allReportes.filter(r=>r.estatus==='Completado').length}
+function updateStats() {
+    document.getElementById('stat-total').textContent = filteredReportes.length;
+    document.getElementById('stat-pendientes').textContent = allReportes.filter(r => r.estatus === 'Pendiente').length;
+    document.getElementById('stat-revision').textContent = allReportes.filter(r => r.estatus === 'En Revisión').length;
+    document.getElementById('stat-completados').textContent = allReportes.filter(r => r.estatus === 'Completado').length;
+}
 
-function renderTabla(){const html=filteredReportes.map(r=>{const idLimpio=String(r.id_reporte).replace('AG-','');return`<tr class="border-b hover:bg-slate-50 transition" id="row-${idLimpio}"><td class="p-4"><span class="text-blue-900 font-black italic uppercase text-xs cursor-pointer hover:underline" onclick="showReporteDetail('${r.id_reporte}')">${r.id_reporte}</span></td><td class="p-4 text-xs font-bold">${r.nombre||'Sin nombre'}</td><td class="p-4 text-xs">${r.categoría||r.categoria||'Sin categoría'}</td><td class="p-4 text-xs text-slate-500">${r.ubicación||r.ubicacion||'Sin ubicación'}</td><td class="p-4 text-center"><select id="sel-${idLimpio}" class="px-3 py-1 rounded-full text-[10px] font-black uppercase border-2 ${getEstatusColor(r.estatus)}" onchange="markChanged('${idLimpio}')"><option value="Nuevo" ${r.estatus==='Nuevo'?'selected':''}>Nuevo</option><option value="Pendiente" ${r.estatus==='Pendiente'?'selected':''}>Pendiente</option><option value="En Revisión" ${r.estatus==='En Revisión'?'selected':''}>En Revisión</option><option value="Completado" ${r.estatus==='Completado'?'selected':''}>Completado</option></select></td><td class="p-4 text-center"><select id="prio-${idLimpio}" class="px-3 py-1 rounded-full text-[10px] font-black uppercase border-2 ${getPrioridadColor(r.prioridad||'Media')}" onchange="markChanged('${idLimpio}')"><option value="Baja" ${r.prioridad==='Baja'?'selected':''}>Baja</option><option value="Media" ${(!r.prioridad||r.prioridad==='Media')?'selected':''}>Media</option><option value="Alta" ${r.prioridad==='Alta'?'selected':''}>Alta</option></select></td><td class="p-4 text-center"><button id="btn-${idLimpio}" onclick="actualizar('${r.id_reporte}')" class="bg-blue-900 text-white px-4 py-2 rounded-xl text-xs font-black uppercase hover:bg-blue-800 transition">SAVE</button></td></tr>`}).join('');document.getElementById('tabla-reportes').innerHTML=html||'<tr><td colspan="7" class="p-8 text-center text-slate-400 font-bold">No hay reportes</td></tr>'}
+function renderTabla() {
+    const html = filteredReportes.map(r => {
+        const idLimpio = String(r.id_reporte).replace('AG-', '');
+        return `
+<tr class="border-b hover:bg-slate-50 transition" id="row-${idLimpio}">
+    <td class="p-4">
+        <span class="text-blue-900 font-black italic uppercase text-xs cursor-pointer hover:underline" onclick="showReporteDetail('${r.id_reporte}')">${r.id_reporte}</span>
+    </td>
+    <td class="p-4 text-xs font-bold">${r.nombre || 'Sin nombre'}</td>
+    <td class="p-4 text-xs">${r.categoría || r.categoria || 'Sin categoría'}</td>
+    <td class="p-4 text-xs text-slate-500">${r.ubicación || r.ubicacion || 'Sin ubicación'}</td>
+    <td class="p-4 text-center">
+        <select id="sel-${idLimpio}" class="px-3 py-1 rounded-full text-[10px] font-black uppercase border-2 ${getEstatusColor(r.estatus)}" onchange="markChanged('${idLimpio}')">
+            <option value="Nuevo" ${r.estatus === 'Nuevo' ? 'selected' : ''}>Nuevo</option>
+            <option value="Pendiente" ${r.estatus === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
+            <option value="En Revisión" ${r.estatus === 'En Revisión' ? 'selected' : ''}>En Revisión</option>
+            <option value="Completado" ${r.estatus === 'Completado' ? 'selected' : ''}>Completado</option>
+        </select>
+    </td>
+    <td class="p-4 text-center">
+        <select id="prio-${idLimpio}" class="px-3 py-1 rounded-full text-[10px] font-black uppercase border-2 ${getPrioridadColor(r.prioridad || 'Media')}" onchange="markChanged('${idLimpio}')">
+            <option value="Baja" ${r.prioridad === 'Baja' ? 'selected' : ''}>Baja</option>
+            <option value="Media" ${(!r.prioridad || r.prioridad === 'Media') ? 'selected' : ''}>Media</option>
+            <option value="Alta" ${r.prioridad === 'Alta' ? 'selected' : ''}>Alta</option>
+        </select>
+    </td>
+    <td class="p-4 text-center">
+        <button id="btn-${idLimpio}" onclick="actualizar('${r.id_reporte}')" class="bg-blue-900 text-white px-4 py-2 rounded-xl text-xs font-black uppercase hover:bg-blue-800 transition">SAVE</button>
+    </td>
+</tr>`;
+    }).join('');
+    document.getElementById('tabla-reportes').innerHTML = html || '<tr><td colspan="7" class="p-8 text-center text-slate-400 font-bold">No hay reportes</td></tr>';
+}
 
-function getEstatusColor(estatus){const colors={'Nuevo':'bg-red-50 text-red-600 border-red-200','Pendiente':'bg-orange-50 text-orange-600 border-orange-200','En Revisión':'bg-blue-50 text-blue-600 border-blue-200','Completado':'bg-green-50 text-green-600 border-green-200'};return colors[estatus]||'bg-slate-50 text-slate-600 border-slate-200'}
+function getEstatusColor(estatus) {
+    const colors = {
+        'Nuevo': 'bg-red-50 text-red-600 border-red-200',
+        'Pendiente': 'bg-orange-50 text-orange-600 border-orange-200',
+        'En Revisión': 'bg-blue-50 text-blue-600 border-blue-200',
+        'Completado': 'bg-green-50 text-green-600 border-green-200'
+    };
+    return colors[estatus] || 'bg-slate-50 text-slate-600 border-slate-200';
+}
 
-function getPrioridadColor(prioridad){const colors={'Baja':'bg-slate-50 text-slate-600 border-slate-200','Media':'bg-yellow-50 text-yellow-700 border-yellow-200','Alta':'bg-red-50 text-red-600 border-red-200'};return colors[prioridad]||colors['Media']}
+function getPrioridadColor(prioridad) {
+    const colors = {
+        'Baja': 'bg-slate-50 text-slate-600 border-slate-200',
+        'Media': 'bg-yellow-50 text-yellow-700 border-yellow-200',
+        'Alta': 'bg-red-50 text-red-600 border-red-200'
+    };
+    return colors[prioridad] || colors['Media'];
+}
 
-function markChanged(id){const btn=document.getElementById(`btn-${id}`);btn.classList.remove('bg-blue-900');btn.classList.add('bg-green-600','animate-pulse');btn.innerHTML='<i class="fas fa-save mr-1"></i>GUARDAR'}
+function markChanged(id) {
+    const btn = document.getElementById(`btn-${id}`);
+    btn.classList.remove('bg-blue-900');
+    btn.classList.add('bg-green-600', 'animate-pulse');
+    btn.innerHTML = '<i class="fas fa-save mr-1"></i>GUARDAR';
+}
 
-async function actualizar(id){const btn=event.currentTarget,idLimpio=String(id).replace('AG-',''),estatusElement=document.getElementById(`sel-${idLimpio}`),prioridadElement=document.getElementById(`prio-${idLimpio}`);if(!estatusElement||!prioridadElement){alert('Error: elementos no encontrados');return}const estatus=estatusElement.value,prioridad=prioridadElement.value,usuario=userSession?userSession.email:'Desconocido';btn.innerHTML='<i class="fas fa-sync fa-spin"></i>';btn.disabled=true;try{const response=await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateStatus',id,estatus,prioridad,usuario})});if(!response.ok)throw new Error(`HTTP ${response.status}`);const data=await response.json();if(data.result==='success'){btn.innerHTML='<i class="fas fa-check"></i>';btn.classList.remove('bg-green-600','animate-pulse');btn.classList.add('bg-green-700');setTimeout(()=>{btn.innerHTML='SAVE';btn.classList.remove('bg-green-700');btn.classList.add('bg-blue-900');btn.disabled=false},2000);const row=document.getElementById(`row-${idLimpio}`);if(row){row.classList.add('row-highlight')}}else{throw new Error(data.message||'Error')}}catch(error){console.error(error);alert('Error al actualizar');btn.innerHTML='SAVE';btn.disabled=false}}
+async function actualizar(id) {
+    const btn = event.currentTarget;
+    const idLimpio = String(id).replace('AG-', '');
+    const estatusElement = document.getElementById(`sel-${idLimpio}`);
+    const prioridadElement = document.getElementById(`prio-${idLimpio}`);
+    
+    if (!estatusElement || !prioridadElement) {
+        alert('Error: elementos no encontrados');
+        return;
+    }
+    
+    const estatus = estatusElement.value;
+    const prioridad = prioridadElement.value;
+    const usuario = userSession ? userSession.email : 'Desconocido';
+    
+    btn.innerHTML = '<i class="fas fa-sync fa-spin"></i>';
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'updateStatus',
+                id,
+                estatus,
+                prioridad,
+                usuario
+            })
+        });
+        
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        
+        const data = await response.json();
+        
+        if (data.result === 'success') {
+            btn.innerHTML = '<i class="fas fa-check"></i>';
+            btn.classList.remove('bg-green-600', 'animate-pulse');
+            btn.classList.add('bg-green-700');
+            setTimeout(() => {
+                btn.innerHTML = 'SAVE';
+                btn.classList.remove('bg-green-700');
+                btn.classList.add('bg-blue-900');
+                btn.disabled = false;
+            }, 2000);
+            const row = document.getElementById(`row-${idLimpio}`);
+            if (row) {
+                row.classList.add('row-highlight');
+            }
+        } else {
+            throw new Error(data.message || 'Error');
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Error al actualizar');
+        btn.innerHTML = 'SAVE';
+        btn.disabled = false;
+    }
+}
 
-function showReporteDetail(id){addToRecentActivity(id);const reporte=allReportes.find(r=>r.id_reporte===id);if(!reporte){alert('Reporte no encontrado');return}document.getElementById('modal-title').textContent=id;const content=`<div class="grid grid-cols-2 gap-4"><div><p class="text-xs font-black text-slate-400 uppercase mb-1">Ciudadano</p><p class="text-sm font-bold">${reporte.nombre||'Sin nombre'}</p></div><div><p class="text-xs font-black text-slate-400 uppercase mb-1">Email</p><p class="text-sm">${reporte.email||'Sin email'}</p></div><div><p class="text-xs font-black text-slate-400 uppercase mb-1">Categoría</p><p class="text-sm font-bold">${reporte.categoría||reporte.categoria||'Sin categoría'}</p></div><div><p class="text-xs font-black text-slate-400 uppercase mb-1">Prioridad</p><p class="text-sm font-bold">${reporte.prioridad||'Media'}</p></div><div><p class="text-xs font-black text-slate-400 uppercase mb-1">Estatus</p><p class="text-sm font-bold">${reporte.estatus}</p></div><div><p class="text-xs font-black text-slate-400 uppercase mb-1">Fecha</p><p class="text-sm">${new Date(reporte.fecha).toLocaleDateString('es-PR')}</p></div><div class="col-span-2"><p class="text-xs font-black text-slate-400 uppercase mb-1">Ubicación</p><p class="text-sm font-bold">${reporte.ubicación||reporte.ubicacion||'Sin ubicación'}</p></div><div class="col-span-2"><p class="text-xs font-black text-slate-400 uppercase mb-1">Descripción</p><p class="text-sm">${reporte.descripción||reporte.descripcion||'Sin descripción'}</p></div>${reporte.foto_url?`<div class="col-span-2"><p class="text-xs font-black text-slate-400 uppercase mb-2">Foto</p><img src="${reporte.foto_url}" alt="Foto" class="w-full rounded-xl"></div>`:''}${reporte.latitud&&reporte.longitud?`<div class="col-span-2"><p class="text-xs font-black text-slate-400 uppercase mb-1">Coordenadas GPS</p><p class="text-sm font-mono">${reporte.latitud}, ${reporte.longitud}</p><button onclick="window.open('https://www.google.com/maps?q=${reporte.latitud},${reporte.longitud}','_blank')" class="mt-2 text-xs text-blue-900 font-bold hover:underline"><i class="fas fa-map-marker-alt mr-1"></i>Ver en Google Maps</button></div>`:''}</div>`;document.getElementById('modal-content').innerHTML=content;document.getElementById('modal-actions').innerHTML=`<button onclick="closeModal()" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-black uppercase text-sm hover:bg-slate-200 transition">Cerrar</button>`;document.getElementById('detail-modal').classList.add('active')}
+function showReporteDetail(id) {
+    addToRecentActivity(id);
+    const reporte = allReportes.find(r => r.id_reporte === id);
+    if (!reporte) {
+        alert('Reporte no encontrado');
+        return;
+    }
+    document.getElementById('modal-title').textContent = id;
+    const content = `
+<div class="grid grid-cols-2 gap-4">
+    <div><p class="text-xs font-black text-slate-400 uppercase mb-1">Ciudadano</p><p class="text-sm font-bold">${reporte.nombre || 'Sin nombre'}</p></div>
+    <div><p class="text-xs font-black text-slate-400 uppercase mb-1">Email</p><p class="text-sm">${reporte.email || 'Sin email'}</p></div>
+    <div><p class="text-xs font-black text-slate-400 uppercase mb-1">Categoría</p><p class="text-sm font-bold">${reporte.categoría || reporte.categoria || 'Sin categoría'}</p></div>
+    <div><p class="text-xs font-black text-slate-400 uppercase mb-1">Prioridad</p><p class="text-sm font-bold">${reporte.prioridad || 'Media'}</p></div>
+    <div><p class="text-xs font-black text-slate-400 uppercase mb-1">Estatus</p><p class="text-sm font-bold">${reporte.estatus}</p></div>
+    <div><p class="text-xs font-black text-slate-400 uppercase mb-1">Fecha</p><p class="text-sm">${new Date(reporte.fecha).toLocaleDateString('es-PR')}</p></div>
+    <div class="col-span-2"><p class="text-xs font-black text-slate-400 uppercase mb-1">Ubicación</p><p class="text-sm font-bold">${reporte.ubicación || reporte.ubicacion || 'Sin ubicación'}</p></div>
+    <div class="col-span-2"><p class="text-xs font-black text-slate-400 uppercase mb-1">Descripción</p><p class="text-sm">${reporte.descripción || reporte.descripcion || 'Sin descripción'}</p></div>
+    ${reporte.foto_url ? `<div class="col-span-2"><p class="text-xs font-black text-slate-400 uppercase mb-2">Foto</p><img src="${reporte.foto_url}" alt="Foto" class="w-full rounded-xl"></div>` : ''}
+    ${reporte.latitud && reporte.longitud ? `<div class="col-span-2"><p class="text-xs font-black text-slate-400 uppercase mb-1">Coordenadas GPS</p><p class="text-sm font-mono">${reporte.latitud}, ${reporte.longitud}</p><button onclick="window.open('https://www.google.com/maps?q=${reporte.latitud},${reporte.longitud}','_blank')" class="mt-2 text-xs text-blue-900 font-bold hover:underline"><i class="fas fa-map-marker-alt mr-1"></i>Ver en Google Maps</button></div>` : ''}
+</div>`;
+    document.getElementById('modal-content').innerHTML = content;
+    document.getElementById('modal-actions').innerHTML = '<button onclick="closeModal()" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-black uppercase text-sm hover:bg-slate-200 transition">Cerrar</button>';
+    document.getElementById('detail-modal').classList.add('active');
+}
 
-function closeModal(){document.getElementById('detail-modal').classList.remove('active')}
+function closeModal() {
+    document.getElementById('detail-modal').classList.remove('active');
+}
 
-function exportarReportes(){let csv='ID,Ciudadano,Categoria,Ubicacion,Estatus,Prioridad,Fecha\n';filteredReportes.forEach(r=>csv+=`${r.id_reporte},"${r.nombre||''}","${r.categoría||r.categoria}","${r.ubicación||r.ubicacion}",${r.estatus},${r.prioridad||'Media'},${r.fecha}\n`);const blob=new Blob([csv],{type:'text/csv'}),url=window.URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`aguadilla-reportes-${new Date().toISOString().split('T')[0]}.csv`;a.click();window.URL.revokeObjectURL(url)}
+function exportarReportes() {
+    let csv = 'ID,Ciudadano,Categoria,Ubicacion,Estatus,Prioridad,Fecha\n';
+    filteredReportes.forEach(r => csv += `${r.id_reporte},"${r.nombre || ''}","${r.categoría || r.categoria}","${r.ubicación || r.ubicacion}",${r.estatus},${r.prioridad || 'Media'},${r.fecha}\n`);
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `aguadilla-reportes-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
 
-document.getElementById('detail-modal')?.addEve
+document.getElementById('detail-modal')?.addEventListener('click', e => {
+    if (e.target.id === 'detail-modal') closeModal();
+});
+
+document.getElementById('command-palette')?.addEventListener('click', e => {
+    if (e.target.id === 'command-palette') closeCommandPalette();
+});
+</script>
+</body>
+</html>
