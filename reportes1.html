@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Reportes - Aguadilla Ultimate</title>
+    <title>Gestión de Reportes | Aguadilla</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -47,7 +47,6 @@
             <div class="flex justify-between"><kbd class="bg-slate-100 px-3 py-2 rounded font-mono">/</kbd><span class="ml-4">Búsqueda rápida</span></div>
             <div class="flex justify-between"><kbd class="bg-slate-100 px-3 py-2 rounded font-mono">F</kbd><span class="ml-4">Modo Focus</span></div>
             <div class="flex justify-between"><kbd class="bg-slate-100 px-3 py-2 rounded font-mono">E</kbd><span class="ml-4">Exportar</span></div>
-            <div class="flex justify-between"><kbd class="bg-slate-100 px-3 py-2 rounded font-mono">N</kbd><span class="ml-4">Nuevo reporte</span></div>
             <div class="flex justify-between"><kbd class="bg-slate-100 px-3 py-2 rounded font-mono">?</kbd><span class="ml-4">Ver atajos</span></div>
         </div>
     </div>
@@ -130,7 +129,7 @@
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-xs font-black text-white truncate" id="user-name">Empleado</p>
-                        <p class="text-[9px] text-blue-300 truncate" id="user-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="c5a0a8a4aca985a4a2b0a4a1aca9a9a4eba6aaa8">[email&#160;protected]</a></p>
+                        <p class="text-[9px] text-blue-300 truncate" id="user-email">email@aguadilla.com</p>
                     </div>
                 </div>
             </div>
@@ -237,7 +236,7 @@
     </button>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 const SCRIPT_URL="https://script.google.com/macros/s/AKfycbwf6zkn7u0PO3t9TPkVG2NjoDwRF7-BuSAtP4T0PXaDStulKQBJOXqzWFwm5Nqh6LP-jA/exec";
 let allReportes=[],filteredReportes=[],currentFilter='Todos',focusMode=false,userSession=null;
 
@@ -253,11 +252,11 @@ window.onload = function() {
 function verificarSesion() {
     userSession = JSON.parse(localStorage.getItem('user_session') || 'null');
     if (!userSession || !userSession.email) {
-        window.location.href = 'index.html';
+        window.location.href = 'login.html';
         return;
     }
     if (userSession.rol !== 'empleado' && userSession.rol !== 'admin') {
-        window.location.href = 'index.html';
+        window.location.href = 'login.html';
         return;
     }
     document.getElementById('user-name').textContent = `${userSession.nombre} ${userSession.apellido}`;
@@ -267,7 +266,7 @@ function verificarSesion() {
 function cerrarSesion() {
     if (confirm('¿Cerrar sesión?')) {
         localStorage.removeItem('user_session');
-        window.location.href = 'index.html';
+        window.location.href = 'login.html';
     }
 }
 
@@ -333,7 +332,7 @@ function updateCommandResults(query) {
         r.id_reporte.toLowerCase().includes(query.toLowerCase()) ||
         (r.categoría && r.categoría.toLowerCase().includes(query.toLowerCase())) ||
         (r.ubicación && r.ubicación.toLowerCase().includes(query.toLowerCase())) ||
-        (r.nombre && r.nombre.toLowerCase().includes(query.toLowerCase()))
+        (r.usuario && r.usuario.toLowerCase().includes(query.toLowerCase()))
     );
     const html = matches.slice(0, 8).map(r => `
 <div onclick="showReporteDetail('${r.id_reporte}');closeCommandPalette()" class="p-4 hover:bg-slate-50 cursor-pointer border-b">
@@ -394,11 +393,12 @@ async function cargarReportes() {
     try {
         const res = await fetch(SCRIPT_URL);
         allReportes = await res.json();
+        console.log('Reportes cargados:', allReportes);
         aplicarFiltro();
         const ahora = new Date();
         document.getElementById('sync-status').textContent = ahora.getHours() + ':' + ahora.getMinutes().toString().padStart(2, '0');
     } catch (e) {
-        console.error(e);
+        console.error('Error cargando reportes:', e);
         alert('Error al cargar reportes');
     } finally {
         syncIcon.classList.remove('fa-spin');
@@ -424,13 +424,13 @@ function updateStats() {
 
 function renderTabla() {
     const html = filteredReportes.map(r => {
-        const idLimpio = String(r.id_reporte).replace('AG-', '');
+        const idLimpio = String(r.id_reporte).replace('AG-','');
         return `
 <tr class="border-b hover:bg-slate-50 transition" id="row-${idLimpio}">
     <td class="p-4">
         <span class="text-blue-900 font-black italic uppercase text-xs cursor-pointer hover:underline" onclick="showReporteDetail('${r.id_reporte}')">${r.id_reporte}</span>
     </td>
-    <td class="p-4 text-xs font-bold">${r.nombre || 'Sin nombre'}</td>
+    <td class="p-4 text-xs font-bold">${r.usuario || 'Sin nombre'}</td>
     <td class="p-4 text-xs">${r.categoría || r.categoria || 'Sin categoría'}</td>
     <td class="p-4 text-xs text-slate-500">${r.ubicación || r.ubicacion || 'Sin ubicación'}</td>
     <td class="p-4 text-center">
@@ -551,7 +551,7 @@ function showReporteDetail(id) {
     document.getElementById('modal-title').textContent = id;
     const content = `
 <div class="grid grid-cols-2 gap-4">
-    <div><p class="text-xs font-black text-slate-400 uppercase mb-1">Ciudadano</p><p class="text-sm font-bold">${reporte.nombre || 'Sin nombre'}</p></div>
+    <div><p class="text-xs font-black text-slate-400 uppercase mb-1">Ciudadano</p><p class="text-sm font-bold">${reporte.usuario || 'Sin nombre'}</p></div>
     <div><p class="text-xs font-black text-slate-400 uppercase mb-1">Email</p><p class="text-sm">${reporte.email || 'Sin email'}</p></div>
     <div><p class="text-xs font-black text-slate-400 uppercase mb-1">Categoría</p><p class="text-sm font-bold">${reporte.categoría || reporte.categoria || 'Sin categoría'}</p></div>
     <div><p class="text-xs font-black text-slate-400 uppercase mb-1">Prioridad</p><p class="text-sm font-bold">${reporte.prioridad || 'Media'}</p></div>
@@ -573,7 +573,7 @@ function closeModal() {
 
 function exportarReportes() {
     let csv = 'ID,Ciudadano,Categoria,Ubicacion,Estatus,Prioridad,Fecha\n';
-    filteredReportes.forEach(r => csv += `${r.id_reporte},"${r.nombre || ''}","${r.categoría || r.categoria}","${r.ubicación || r.ubicacion}",${r.estatus},${r.prioridad || 'Media'},${r.fecha}\n`);
+    filteredReportes.forEach(r => csv += `${r.id_reporte},"${r.usuario || ''}","${r.categoría || r.categoria}","${r.ubicación || r.ubicacion}",${r.estatus},${r.prioridad || 'Media'},${r.fecha}\n`);
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -584,4 +584,12 @@ function exportarReportes() {
 }
 
 document.getElementById('detail-modal')?.addEventListener('click', e => {
-  
+    if (e.target.id === 'detail-modal') closeModal();
+});
+
+document.getElementById('command-palette')?.addEventListener('click', e => {
+    if (e.target.id === 'command-palette') closeCommandPalette();
+});
+</script>
+</body>
+</html>
