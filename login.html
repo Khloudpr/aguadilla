@@ -172,7 +172,7 @@
                         <span class="ml-2 text-sm text-slate-600 font-medium">Recordarme</span>
                     </label>
                     <a href="#" onclick="showForgotPassword()" class="text-sm text-blue-600 hover:text-blue-800 font-bold">
-                        ¿Olvidaste tu contraseña?
+                        ¿Olvidaste contraseña?
                     </a>
                 </div>
 
@@ -216,7 +216,7 @@
             <div class="flex justify-between items-start mb-6">
                 <div>
                     <h3 class="text-2xl font-black text-slate-900">Recuperar Contraseña</h3>
-                    <p class="text-slate-600 text-sm mt-2">Te enviaremos instrucciones por correo</p>
+                    <p class="text-slate-600 text-sm mt-2">Te enviaremos instrucciones</p>
                 </div>
                 <button onclick="closeForgotPassword()" class="text-2xl text-slate-400 hover:text-slate-900">
                     &times;
@@ -248,6 +248,8 @@
     </div>
 
     <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwf6zkn7u0PO3t9TPkVG2NjoDwRF7-BuSAtP4T0PXaDStulKQBJOXqzWFwm5Nqh6LP-jA/exec";
+
         // Toggle Password Visibility
         function togglePassword() {
             const passwordInput = document.getElementById('password');
@@ -279,58 +281,80 @@
             event.preventDefault();
             const email = document.getElementById('reset-email').value;
             
-            // Simulate sending email
-            alert(`Se han enviado instrucciones de recuperación a: ${email}`);
+            alert(`Se han enviado instrucciones a: ${email}`);
             closeForgotPassword();
         }
 
-        // Handle Login
-        function handleLogin(event) {
+        // Handle Login - REAL VALIDATION WITH GOOGLE SHEET
+        async function handleLogin(event) {
             event.preventDefault();
             
             const email = document.getElementById('email').value.toLowerCase().trim();
             const password = document.getElementById('password').value;
             const errorDiv = document.getElementById('error-message');
             const form = document.getElementById('login-form');
+            const submitBtn = event.target.querySelector('button[type="submit"]');
 
-            // Mock credentials (replace with real authentication)
-            const validUsers = [
-                { email: 'admin@aguadilla.pr.gov', password: 'admin123', nombre: 'Administrador', apellido: 'Sistema', rol: 'admin' },
-                { email: 'empleado@aguadilla.pr.gov', password: 'empleado123', nombre: 'Empleado', apellido: 'Municipal', rol: 'empleado' }
-            ];
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Verificando...';
+            errorDiv.classList.add('hidden');
 
-            const user = validUsers.find(u => u.email === email && u.password === password);
+            try {
+                // Call Google Apps Script to verify credentials
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'login',
+                        email: email,
+                        password: password
+                    })
+                });
 
-            if (user) {
-                // Save session
-                const session = {
-                    email: user.email,
-                    nombre: user.nombre,
-                    apellido: user.apellido,
-                    rol: user.rol,
-                    loginTime: new Date().toISOString()
-                };
+                const data = await response.json();
+
+                if (data.result === 'success' && data.rol === 'empleado' || data.rol === 'admin') {
+                    // Save session
+                    const session = {
+                        email: data.email,
+                        nombre: data.nombre,
+                        apellido: data.apellido,
+                        rol: data.rol,
+                        departamento: data.departamento || 'Municipal',
+                        loginTime: new Date().toISOString()
+                    };
+                    
+                    localStorage.setItem('user_session', JSON.stringify(session));
+
+                    // Success animation
+                    submitBtn.innerHTML = '<i class="fas fa-check mr-2"></i>¡Acceso Concedido!';
+                    submitBtn.classList.remove('from-blue-600', 'to-purple-600');
+                    submitBtn.classList.add('from-green-600', 'to-green-600');
+
+                    // Redirect to dashboard
+                    setTimeout(() => {
+                        window.location.href = 'dashboard1.html';
+                    }, 1000);
+
+                } else {
+                    throw new Error(data.message || 'Credenciales inválidas');
+                }
+
+            } catch (error) {
+                console.error('Login error:', error);
                 
-                localStorage.setItem('user_session', JSON.stringify(session));
-
-                // Success animation
-                const submitBtn = event.target.querySelector('button[type="submit"]');
-                submitBtn.innerHTML = '<i class="fas fa-check mr-2"></i>¡Acceso Concedido!';
-                submitBtn.classList.add('bg-green-600');
-
-                // Redirect to dashboard
-                setTimeout(() => {
-                    window.location.href = 'dashboard1.html';
-                }, 1000);
-
-            } else {
                 // Show error
+                document.getElementById('error-text').textContent = error.message || 'Error de conexión. Intenta de nuevo.';
                 errorDiv.classList.remove('hidden');
                 form.classList.add('shake');
                 
                 setTimeout(() => {
                     form.classList.remove('shake');
                 }, 500);
+
+                // Reset button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión';
 
                 // Auto-hide error after 5 seconds
                 setTimeout(() => {
@@ -351,7 +375,7 @@
             const session = localStorage.getItem('user_session');
             if (session) {
                 const data = JSON.parse(session);
-                if (data.email && data.rol) {
+                if (data.email && (data.rol === 'empleado' || data.rol === 'admin')) {
                     // Already logged in, redirect
                     window.location.href = 'dashboard1.html';
                 }
