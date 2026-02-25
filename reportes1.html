@@ -29,6 +29,15 @@
         .breadcrumb .current{color:#1e3a8a}
         .row-highlight{background:#fef3c7;animation:highlight 2s}
         @keyframes highlight{from{background:#fef3c7}to{background:transparent}}
+        
+        /* Lightbox Ultimate */
+        .lightbox{display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.95);align-items:center;justify-content:center;animation:fadeIn 0.3s}
+        .lightbox.active{display:flex}
+        .lightbox-image{max-width:90vw;max-height:90vh;object-fit:contain;border-radius:1rem;box-shadow:0 25px 50px rgba(0,0,0,0.5)}
+        .lightbox-close{position:absolute;top:20px;right:20px;width:50px;height:50px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;transition:all 0.3s;z-index:1000}
+        .lightbox-close:hover{transform:scale(1.1);background:#f1f5f9}
+        .lightbox-info{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.95);padding:1rem 2rem;border-radius:1rem;font-size:0.875rem;font-weight:700;color:#1e293b;display:flex;gap:2rem}
+        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
     </style>
 </head>
 <body class="bg-slate-100 font-sans">
@@ -58,6 +67,13 @@
         <input type="text" id="command-input" placeholder="🔍 Buscar por ID, categoría, ubicación..." class="w-full px-6 py-4 rounded-2xl text-lg font-bold border-4 border-blue-900 outline-none" autocomplete="off">
         <div id="command-results" class="bg-white mt-2 rounded-2xl shadow-2xl max-h-96 overflow-y-auto"></div>
     </div>
+</div>
+
+<!-- Lightbox Ultimate -->
+<div id="photo-lightbox" class="lightbox" onclick="closeLightbox(event)">
+    <button class="lightbox-close" onclick="closeLightbox(event)">×</button>
+    <img id="lightbox-img" src="" alt="Evidencia" class="lightbox-image">
+    <div id="lightbox-info" class="lightbox-info"></div>
 </div>
 
 <!-- Detail Modal -->
@@ -129,7 +145,7 @@
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-xs font-black text-white truncate" id="user-name">Empleado</p>
-                        <p class="text-[9px] text-blue-300 truncate" id="user-email">email@aguadilla.com</p>
+                        <p class="text-[9px] text-blue-300 truncate" id="user-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="97f2faf6fefbd7f6f0e2f6f3fefbfbf6b9f4f8fa">[email&#160;protected]</a></p>
                     </div>
                 </div>
             </div>
@@ -236,7 +252,7 @@
     </button>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 const SCRIPT_URL="https://script.google.com/macros/s/AKfycbwf6zkn7u0PO3t9TPkVG2NjoDwRF7-BuSAtP4T0PXaDStulKQBJOXqzWFwm5Nqh6LP-jA/exec";
 let allReportes=[],filteredReportes=[],currentFilter='Todos',focusMode=false,userSession=null;
 
@@ -559,7 +575,16 @@ function showReporteDetail(id) {
     <div><p class="text-xs font-black text-slate-400 uppercase mb-1">Fecha</p><p class="text-sm">${new Date(reporte.fecha).toLocaleDateString('es-PR')}</p></div>
     <div class="col-span-2"><p class="text-xs font-black text-slate-400 uppercase mb-1">Ubicación</p><p class="text-sm font-bold">${reporte.ubicación || reporte.ubicacion || 'Sin ubicación'}</p></div>
     <div class="col-span-2"><p class="text-xs font-black text-slate-400 uppercase mb-1">Descripción</p><p class="text-sm">${reporte.descripción || reporte.descripcion || 'Sin descripción'}</p></div>
-    ${reporte.foto_url ? `<div class="col-span-2"><p class="text-xs font-black text-slate-400 uppercase mb-2">Foto</p><img src="${reporte.foto_url}" alt="Foto" class="w-full rounded-xl"></div>` : ''}
+    ${reporte.foto_url ? `<div class="col-span-2">
+        <p class="text-xs font-black text-slate-400 uppercase mb-3">Evidencia Fotográfica</p>
+        <div class="bg-slate-50 rounded-xl p-4 border-2 border-slate-200">
+            <img src="${reporte.foto_url}" alt="Preview" class="w-48 h-48 object-cover rounded-lg mb-3 cursor-pointer hover:opacity-80 transition" onclick="openLightbox('${reporte.foto_url}', '${reporte.id_reporte}', '${reporte.fecha}')">
+            <button onclick="openLightbox('${reporte.foto_url}', '${reporte.id_reporte}', '${reporte.fecha}')" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-xl font-black text-sm hover:from-blue-700 hover:to-purple-700 transition flex items-center justify-center gap-2">
+                <i class="fas fa-search-plus"></i>
+                Ver en Pantalla Completa
+            </button>
+        </div>
+    </div>` : ''}
     ${reporte.latitud && reporte.longitud ? `<div class="col-span-2"><p class="text-xs font-black text-slate-400 uppercase mb-1">Coordenadas GPS</p><p class="text-sm font-mono">${reporte.latitud}, ${reporte.longitud}</p><button onclick="window.open('https://www.google.com/maps?q=${reporte.latitud},${reporte.longitud}','_blank')" class="mt-2 text-xs text-blue-900 font-bold hover:underline"><i class="fas fa-map-marker-alt mr-1"></i>Ver en Google Maps</button></div>` : ''}
 </div>`;
     document.getElementById('modal-content').innerHTML = content;
@@ -584,11 +609,28 @@ function exportarReportes() {
 }
 
 document.getElementById('detail-modal')?.addEventListener('click', e => {
-    if (e.target.id === 'detail-modal') closeModal();
-});
+  
+function openLightbox(url, id, fecha) {
+    document.getElementById('lightbox-img').src = url;
+    document.getElementById('lightbox-info').innerHTML = `
+        <span><i class="fas fa-hashtag mr-1"></i>${id}</span>
+        <span><i class="fas fa-calendar mr-1"></i>${new Date(fecha).toLocaleDateString('es-PR')}</span>
+    `;
+    document.getElementById('photo-lightbox').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
 
-document.getElementById('command-palette')?.addEventListener('click', e => {
-    if (e.target.id === 'command-palette') closeCommandPalette();
+function closeLightbox(event) {
+    if (event.target.id === 'photo-lightbox' || event.target.classList.contains('lightbox-close')) {
+        document.getElementById('photo-lightbox').classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeLightbox({target: {id: 'photo-lightbox'}});
+    }
 });
 </script>
 </body>
