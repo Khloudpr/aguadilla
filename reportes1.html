@@ -565,6 +565,10 @@ function showReporteDetail(id) {
         return;
     }
     document.getElementById('modal-title').textContent = id;
+    
+    // Get foto URL - handle different field names
+    const fotoUrl = reporte.foto_url || reporte.Foto_URL || reporte['Foto_URL'] || reporte.foto || '';
+    
     const content = `
 <div class="grid grid-cols-2 gap-4">
     <div><p class="text-xs font-black text-slate-400 uppercase mb-1">Ciudadano</p><p class="text-sm font-bold">${reporte.usuario || 'Sin nombre'}</p></div>
@@ -575,11 +579,11 @@ function showReporteDetail(id) {
     <div><p class="text-xs font-black text-slate-400 uppercase mb-1">Fecha</p><p class="text-sm">${new Date(reporte.fecha).toLocaleDateString('es-PR')}</p></div>
     <div class="col-span-2"><p class="text-xs font-black text-slate-400 uppercase mb-1">Ubicación</p><p class="text-sm font-bold">${reporte.ubicación || reporte.ubicacion || 'Sin ubicación'}</p></div>
     <div class="col-span-2"><p class="text-xs font-black text-slate-400 uppercase mb-1">Descripción</p><p class="text-sm">${reporte.descripción || reporte.descripcion || 'Sin descripción'}</p></div>
-    ${reporte.foto_url ? `<div class="col-span-2">
+    ${fotoUrl ? `<div class="col-span-2">
         <p class="text-xs font-black text-slate-400 uppercase mb-3">Evidencia Fotográfica</p>
         <div class="bg-slate-50 rounded-xl p-4 border-2 border-slate-200">
-            <img src="${reporte.foto_url}" alt="Preview" class="w-48 h-48 object-cover rounded-lg mb-3 cursor-pointer hover:opacity-80 transition" onclick="openLightbox('${reporte.foto_url}', '${reporte.id_reporte}', '${reporte.fecha}')">
-            <button onclick="openLightbox('${reporte.foto_url}', '${reporte.id_reporte}', '${reporte.fecha}')" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-xl font-black text-sm hover:from-blue-700 hover:to-purple-700 transition flex items-center justify-center gap-2">
+            <img src="${fotoUrl}" alt="Preview" class="w-48 h-48 object-cover rounded-lg mb-3 cursor-pointer hover:opacity-80 transition" onclick="openLightbox('${fotoUrl}', '${reporte.id_reporte}', '${reporte.fecha}')">
+            <button onclick="openLightbox('${fotoUrl}', '${reporte.id_reporte}', '${reporte.fecha}')" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-xl font-black text-sm hover:from-blue-700 hover:to-purple-700 transition flex items-center justify-center gap-2">
                 <i class="fas fa-search-plus"></i>
                 Ver en Pantalla Completa
             </button>
