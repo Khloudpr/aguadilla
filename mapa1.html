@@ -108,7 +108,7 @@
             <div id="modal-content" class="space-y-6"></div>
             <div class="flex gap-3 mt-8">
                 <button onclick="goToReportes()" class="flex-1 bg-blue-900 text-white py-3 rounded-xl font-black uppercase text-sm hover:bg-blue-800 transition">
-                    <i class="fas fa-external-link-alt mr-2"></i>Ver en Reportes
+                    <i class="fas fa-search-plus mr-2"></i>Ver en Reportes
                 </button>
                 <button onclick="closeModal()" class="px-6 bg-slate-100 text-slate-600 py-3 rounded-xl font-black uppercase text-sm hover:bg-slate-200 transition">Cerrar</button>
             </div>
@@ -349,14 +349,14 @@ function showReporteDetail(id) {
     ${fotoUrl ? `<div class="col-span-2">
         <p class="text-xs font-black text-slate-400 uppercase mb-3">Evidencia Fotográfica</p>
         <div class="bg-slate-50 rounded-xl p-4 border-2 border-slate-200">
-            <img src="${fotoUrl}" alt="Preview" class="w-48 h-48 object-cover rounded-lg mb-3 cursor-pointer hover:opacity-80 transition" onclick="openLightbox('${fotoUrl}', '${reporte.id_reporte}', '${reporte.fecha}')">
+            <img src="${fotoUrl}" alt="Preview" crossorigin="anonymous" class="w-48 h-48 object-cover rounded-lg mb-3 cursor-pointer hover:opacity-80 transition" onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><rect fill=%22%23e2e8f0%22 width=%22200%22 height=%22200%22/><text x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2216%22>📷 Click para ver</text></svg>'; this.onclick=null; this.style.cursor='default';" onclick="openLightbox('${fotoUrl}', '${reporte.id_reporte}', '${reporte.fecha}')">
             <button onclick="openLightbox('${fotoUrl}', '${reporte.id_reporte}', '${reporte.fecha}')" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-xl font-black text-sm hover:from-blue-700 hover:to-purple-700 transition flex items-center justify-center gap-2">
                 <i class="fas fa-search-plus"></i>
-                Ver en Pantalla Completa
+                Ver Foto Completa
             </button>
         </div>
     </div>` : ''}
-    ${reporte.latitud && reporte.longitud ? `<div class="col-span-2"><p class="text-xs font-black text-slate-400 uppercase mb-1">GPS</p><p class="text-sm font-mono">${reporte.latitud}, ${reporte.longitud}</p><button onclick="window.open('https://www.google.com/maps?q=${reporte.latitud},${reporte.longitud}','_blank')" class="mt-2 text-xs text-blue-900 font-bold hover:underline"><i class="fas fa-external-link-alt mr-1"></i>Ver en Google Maps</button></div>` : ''}
+    ${reporte.latitud && reporte.longitud ? `<div class="col-span-2"><p class="text-xs font-black text-slate-400 uppercase mb-1">GPS</p><p class="text-sm font-mono">${reporte.latitud}, ${reporte.longitud}</p><button onclick="window.open('https://www.google.com/maps?q=${reporte.latitud},${reporte.longitud}','_blank')" class="mt-2 text-xs text-blue-900 font-bold hover:underline"><i class="fas fa-search-plus mr-1"></i>Ver en Google Maps</button></div>` : ''}
 </div>`;
     document.getElementById('modal-content').innerHTML = content;
     document.getElementById('detail-modal').classList.add('active');

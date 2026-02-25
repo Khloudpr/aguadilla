@@ -582,10 +582,10 @@ function showReporteDetail(id) {
     ${fotoUrl ? `<div class="col-span-2">
         <p class="text-xs font-black text-slate-400 uppercase mb-3">Evidencia Fotográfica</p>
         <div class="bg-slate-50 rounded-xl p-4 border-2 border-slate-200">
-            <img src="${fotoUrl}" alt="Preview" class="w-48 h-48 object-cover rounded-lg mb-3 cursor-pointer hover:opacity-80 transition" onclick="openLightbox('${fotoUrl}', '${reporte.id_reporte}', '${reporte.fecha}')">
+            <img src="${fotoUrl}" alt="Preview" crossorigin="anonymous" class="w-48 h-48 object-cover rounded-lg mb-3 cursor-pointer hover:opacity-80 transition" onclick="openLightbox('${fotoUrl}', '${reporte.id_reporte}', '${reporte.fecha}')" onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><rect fill=%22%23e2e8f0%22 width=%22200%22 height=%22200%22/><text x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2216%22>📷 Click para ver</text></svg>';">
             <button onclick="openLightbox('${fotoUrl}', '${reporte.id_reporte}', '${reporte.fecha}')" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-xl font-black text-sm hover:from-blue-700 hover:to-purple-700 transition flex items-center justify-center gap-2">
                 <i class="fas fa-search-plus"></i>
-                Ver en Pantalla Completa
+                Ver Foto Completa
             </button>
         </div>
     </div>` : ''}
