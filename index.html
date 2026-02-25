@@ -606,8 +606,11 @@
         
         async function loadRealStats() {
             try {
+                console.log('Cargando stats desde Sheet...');
                 const response = await fetch(SCRIPT_URL);
                 const reportes = await response.json();
+                
+                console.log('Reportes recibidos:', reportes.length);
                 
                 const total = reportes.length;
                 const completados = reportes.filter(r => r.estatus === 'Completado').length;
@@ -626,16 +629,26 @@
                 });
                 const avgHours = completedCount > 0 ? Math.round(totalHours / completedCount) : 24;
                 
-                document.querySelector('[data-target="1247"]').setAttribute('data-target', total || 0);
-                document.querySelector('[data-target="24"]').setAttribute('data-target', avgHours);
-                document.querySelector('[data-target="94"]').setAttribute('data-target', satisfaction);
+                console.log('Stats calculados:', {total, avgHours, satisfaction});
+                
+                // Update data-target attributes
+                const totalCounter = document.querySelector('[data-target="1247"]');
+                const hoursCounter = document.querySelector('[data-target="24"]');
+                const satCounter = document.querySelector('[data-target="94"]');
+                
+                if (totalCounter) totalCounter.setAttribute('data-target', total);
+                if (hoursCounter) hoursCounter.setAttribute('data-target', avgHours);
+                if (satCounter) satCounter.setAttribute('data-target', satisfaction);
+                
+                console.log('Stats actualizados en DOM');
                 
             } catch (error) {
-                console.log('Stats: usando valores por defecto');
+                console.error('Error cargando stats:', error);
             }
         }
         
-        window.addEventListener('load', loadRealStats);
+        // Load stats immediately on page load
+        window.addEventListener('DOMContentLoaded', loadRealStats);
 
         // Mobile Menu Toggle
         function toggleMobileMenu() {

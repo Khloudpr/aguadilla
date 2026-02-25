@@ -436,8 +436,16 @@
             
             if (step === 2) {
                 const ubicacion = document.getElementById('ubicacion').value.trim();
+                const latitud = document.getElementById('latitud').value;
+                const longitud = document.getElementById('longitud').value;
+                
                 if (!ubicacion) {
                     alert('Ingresa la ubicación');
+                    return false;
+                }
+                
+                if (!latitud || !longitud) {
+                    alert('Debes obtener la ubicación GPS antes de continuar');
                     return false;
                 }
             }
