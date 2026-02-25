@@ -374,7 +374,75 @@ function executeCommand(el){const action=el.dataset.action;if(window.commandActi
 
 function toggleFocusMode(){focusMode=!focusMode;document.body.classList.toggle('focus-mode')}
 
-function loadNotifications(){notifications=[{id:1,text:'Nuevo reporte en Zona Centro',time:'5 min',unread:true},{id:2,text:'Reporte completado',time:'1 hora',unread:true},{id:3,text:'3 reportes sin atención >7 días',time:'2 horas',unread:false}];updateNotificationBadge()}
+function loadNotifications(){
+    // Generate notifications based on real data
+    notifications = [];
+    
+    if (allReportes && allReportes.length > 0) {
+        // Check for new reports (last 24 hours)
+        const ahora = new Date();
+        const hace24h = new Date(ahora - 24*60*60*1000);
+        
+        const nuevos = allReportes.filter(r => {
+            const fecha = new Date(r.fecha);
+            return fecha >= hace24h && r.estatus === 'Nuevo';
+        });
+        
+        if (nuevos.length > 0) {
+            const ultimoNuevo = nuevos[0];
+            const tiempoDesde = calcularTiempoDesde(ultimoNuevo.fecha);
+            notifications.push({
+                id: 1,
+                text: `Nuevo reporte: ${ultimoNuevo.categoría || ultimoNuevo.categoria}`,
+                time: tiempoDesde,
+                unread: true
+            });
+        }
+        
+        // Check for high priority reports
+        const altaPrioridad = allReportes.filter(r => 
+            r.prioridad === 'Alta' && r.estatus !== 'Completado'
+        );
+        
+        if (altaPrioridad.length > 0) {
+            notifications.push({
+                id: 2,
+                text: `${altaPrioridad.length} reporte${altaPrioridad.length > 1 ? 's' : ''} de alta prioridad`,
+                time: 'Pendiente',
+                unread: true
+            });
+        }
+        
+        // Check for old reports (>7 days)
+        const hace7dias = new Date(ahora - 7*24*60*60*1000);
+        const sinAtencion = allReportes.filter(r => {
+            const fecha = new Date(r.fecha);
+            return fecha < hace7dias && r.estatus !== 'Completado';
+        });
+        
+        if (sinAtencion.length > 0) {
+            notifications.push({
+                id: 3,
+                text: `${sinAtencion.length} reporte${sinAtencion.length > 1 ? 's' : ''} sin atención >7 días`,
+                time: 'Urgente',
+                unread: true
+            });
+        }
+    }
+    
+    updateNotificationBadge();
+}
+
+function calcularTiempoDesde(fecha) {
+    const ahora = new Date();
+    const entonces = new Date(fecha);
+    const diff = Math.floor((ahora - entonces) / 1000); // segundos
+    
+    if (diff < 60) return 'Ahora';
+    if (diff < 3600) return Math.floor(diff / 60) + ' min';
+    if (diff < 86400) return Math.floor(diff / 3600) + ' hora' + (Math.floor(diff / 3600) > 1 ? 's' : '');
+    return Math.floor(diff / 86400) + ' día' + (Math.floor(diff / 86400) > 1 ? 's' : '');
+}
 
 function updateNotificationBadge(){const unread=notifications.filter(n=>n.unread).length,badge=document.getElementById('notif-badge');if(unread>0){badge.textContent=unread;badge.style.display='flex'}else{badge.style.display='none'}}
 

@@ -612,8 +612,6 @@ function exportarReportes() {
     window.URL.revokeObjectURL(url);
 }
 
-document.getElementById('detail-modal')?.addEventListener('click', e => {
-  
 function openLightbox(url, id, fecha) {
     document.getElementById('lightbox-img').src = url;
     document.getElementById('lightbox-info').innerHTML = `
@@ -630,6 +628,14 @@ function closeLightbox(event) {
         document.body.style.overflow = 'auto';
     }
 }
+
+document.getElementById('detail-modal')?.addEventListener('click', e => {
+    if (e.target.id === 'detail-modal') closeModal();
+});
+
+document.getElementById('command-palette')?.addEventListener('click', e => {
+    if (e.target.id === 'command-palette') closeCommandPalette();
+});
 
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
