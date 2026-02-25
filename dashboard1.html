@@ -386,7 +386,7 @@ function addToRecentActivity(id){const activity=(localStorage.getItem('recent_ac
 
 function setupFilters(){document.querySelectorAll('.filter-btn').forEach(btn=>btn.addEventListener('click',function(){document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active');currentPeriod=this.dataset.period==='all'?9999:parseInt(this.dataset.period);processData(allReportes)}))}
 
-async function fetchDashboardData(){const syncIcon=document.getElementById('sync-icon');syncIcon.classList.add('fa-spin');try{const res=await fetch(SCRIPT_URL);allReportes=await res.json();const ahora=new Date(),horaStr=ahora.getHours()+":"+ahora.getMinutes().toString().padStart(2,'0');document.getElementById('last-sync').innerText=horaStr;processData(allReportes)}catch(e){console.error("Error:",e);alert('Error al cargar datos')}finally{syncIcon.classList.remove('fa-spin')}}
+async function fetchDashboardData(){const syncIcon=document.getElementById('sync-icon');syncIcon.classList.add('fa-spin');try{console.log('Fetching data from:', SCRIPT_URL);const res=await fetch(SCRIPT_URL);allReportes=await res.json();console.log('Total reportes recibidos:', allReportes.length);console.log('Primer reporte:', allReportes[0]);const ahora=new Date(),horaStr=ahora.getHours()+":"+ahora.getMinutes().toString().padStart(2,'0');document.getElementById('last-sync').innerText=horaStr;processData(allReportes)}catch(e){console.error("Error completo:",e);alert('Error al cargar datos: '+e.message)}finally{syncIcon.classList.remove('fa-spin')}}
 
 function filterByPeriod(reportes){if(currentPeriod===9999)return reportes;const ahora=new Date(),cutoffDate=new Date(ahora-(currentPeriod*24*60*60*1000));return reportes.filter(r=>{const fecha=new Date(r.fecha);return fecha>=cutoffDate})}
 
@@ -410,7 +410,10 @@ function calcularDias(fecha){const ahora=new Date(),fechaReporte=new Date(fecha)
 function showReporteDetail(id) {
     currentReporteId = id;
     addToRecentActivity(id);
+    console.log('Buscando reporte:', id);
+    console.log('Total reportes en allReportes:', allReportes.length);
     const reporte = allReportes.find(r => r.id_reporte === id);
+    console.log('Reporte encontrado:', reporte);
     if (!reporte) {
         alert('Reporte no encontrado');
         return;
