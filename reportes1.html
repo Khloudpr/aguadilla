@@ -262,7 +262,6 @@ window.onload = function() {
     setupFilters();
     setupKeyboardShortcuts();
     updateRecentActivity();
-    checkURLParams();
 };
 
 function verificarSesion() {
@@ -390,7 +389,7 @@ function checkURLParams() {
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
     if (id) {
-        setTimeout(() => showReporteDetail(id), 500);
+        showReporteDetail(id);
     }
 }
 
@@ -411,6 +410,7 @@ async function cargarReportes() {
         allReportes = await res.json();
         console.log('Reportes cargados:', allReportes);
         aplicarFiltro();
+        checkURLParams();
         const ahora = new Date();
         document.getElementById('sync-status').textContent = ahora.getHours() + ':' + ahora.getMinutes().toString().padStart(2, '0');
     } catch (e) {
@@ -533,6 +533,13 @@ async function actualizar(id) {
         const data = await response.json();
         
         if (data.result === 'success') {
+            // Update in-memory data so re-render reflects the saved values
+            const idx = allReportes.findIndex(r => r.id_reporte === id);
+            if (idx !== -1) {
+                allReportes[idx].estatus = estatus;
+                allReportes[idx].prioridad = prioridad;
+            }
+            aplicarFiltro();
             btn.innerHTML = '<i class="fas fa-check"></i>';
             btn.classList.remove('bg-green-600', 'animate-pulse');
             btn.classList.add('bg-green-700');
