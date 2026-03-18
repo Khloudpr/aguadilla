@@ -181,7 +181,7 @@
             <div class="flex justify-between items-center h-20">
                 <!-- Logo -->
                 <div class="flex items-center gap-4">
-                    <img src="https://khloudpr.github.io/aguadilla/assets/logo-aguadilla.png" alt="Municipio de Aguadilla" class="h-14 w-auto">
+                    <img src="https://khloudpr.github.io/aguadilla/assets/logo-aguadilla.png" alt="Municipio de Aguadilla" class="h-14 w-auto logo-img" onerror="this.style.display='none';var fb=document.createElement('div');fb.className='h-14 w-14 bg-white rounded-xl flex items-center justify-center shadow-lg';fb.innerHTML='<span style=\"font-weight:900;color:#1e3a8a;font-size:1.1rem\">AG</span>';this.parentNode.insertBefore(fb,this);">
                     <div class="hidden sm:block">
                         <div class="font-black text-xl text-white" id="nav-title">Aguadilla Reporta</div>
                         <div class="text-xs text-white/80 font-semibold uppercase tracking-wider">El Jardín del Atlántico</div>
@@ -424,7 +424,7 @@
                 <!-- Brand -->
                 <div class="md:col-span-2">
                     <div class="flex items-center gap-4 mb-4">
-                        <img src="https://khloudpr.github.io/aguadilla/assets/logo-aguadilla.png" alt="Municipio de Aguadilla" class="h-14 w-auto">
+                        <img src="https://khloudpr.github.io/aguadilla/assets/logo-aguadilla.png" alt="Municipio de Aguadilla" class="h-14 w-auto logo-img" onerror="this.style.display='none';var fb=document.createElement('div');fb.className='h-14 w-14 bg-white rounded-xl flex items-center justify-center shadow-lg';fb.innerHTML='<span style=\"font-weight:900;color:#1e3a8a;font-size:1.1rem\">AG</span>';this.parentNode.insertBefore(fb,this);">
                         <div>
                             <div class="font-black text-xl">Aguadilla Reporta</div>
                             <div class="text-sm text-slate-400">Sistema Municipal Inteligente</div>
@@ -593,7 +593,7 @@
             });
         };
 
-        // Trigger counter animation on scroll
+        // Trigger counter animation on scroll (fallback if fetch already ran)
         window.addEventListener('scroll', () => {
             if (!animated && window.scrollY > 300) {
                 animateCounters();
@@ -639,6 +639,11 @@
                 if (totalCounter) totalCounter.setAttribute('data-target', total);
                 if (hoursCounter) hoursCounter.setAttribute('data-target', avgHours);
                 if (satCounter) satCounter.setAttribute('data-target', satisfaction);
+                
+                // Animate counters immediately with real data
+                animated = false;
+                animateCounters();
+                animated = true;
                 
                 console.log('Stats actualizados en DOM');
                 
