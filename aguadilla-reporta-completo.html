@@ -365,6 +365,9 @@
             </div>
             
             <div class="space-y-3">
+                <a id="tracking-link" href="consulta.html" class="block w-full bg-blue-600 text-white py-3 rounded-xl font-black hover:bg-blue-700 transition text-sm sm:text-base text-center">
+                    <i class="fas fa-search mr-2"></i> Seguir mi reporte
+                </a>
                 <button onclick="window.location.reload()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black hover:bg-blue-700 transition text-sm sm:text-base">
                     Otro Reporte
                 </button>
@@ -544,6 +547,8 @@
                 if (data.result === 'success') {
                     const trackingCode = data.id || 'AG-2026-' + String(Math.floor(Math.random() * 90000) + 10000);
                     document.getElementById('tracking-code').textContent = trackingCode;
+                    const tLink = document.getElementById('tracking-link');
+                    if(tLink) tLink.href = 'consulta.html?codigo=' + encodeURIComponent(trackingCode);
                     document.getElementById('success-modal').classList.remove('hidden');
                     createConfetti();
                 } else {
