@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestión de Empleados — Aguadilla Reporta</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --navy: #0f1f3d;
+    --navy-mid: #1a3260;
+    --blue: #1e4db7;
+    --accent: #3b82f6;
+    --gold: #f59e0b;
+    --green: #10b981;
+    --red: #ef4444;
+    --surface: #f8fafc;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --muted: #64748b;
+  }
+
+  * { font-family: 'DM Sans', sans-serif; }
+  code, .mono { font-family: 'DM Mono', monospace; }
+
+  body { background: var(--surface); color: var(--text); }
+
+  /* Sidebar */
+  .sidebar {
+    background: var(--navy);
+    width: 260px;
+    min-height: 100vh;
+    position: fixed;
+    left: 0; top: 0;
+    display: flex;
+    flex-direction: column;
+    z-index: 50;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 20px;
+    color: rgba(255,255,255,0.6);
+    border-radius: 10px;
+    margin: 2px 12px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.08); color: white; }
+  .nav-item.active { background: var(--blue); color: white; }
+  .nav-item .icon { width: 20px; text-align: center; }
+
+  /* Cards */
+  .card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  /* Role badge */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge-admin { background: #fef3c7; color: #92400e; }
+  .badge-empleado { background: #dbeafe; color: #1e40af; }
+  .badge-viewer { background: #f0fdf4; color: #166534; }
+
+  /* Status */
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .status-active { background: var(--green); }
+  .status-inactive { background: #cbd5e1; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 20px;
+    padding: 32px;
+    width: 100%;
+    max-width: 560px;
+    margin: 20px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  /* Permission checkboxes */
+  .perm-card {
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .perm-card:hover { border-color: var(--accent); background: #eff6ff; }
+  .perm-card.checked { border-color: var(--blue); background: #eff6ff; }
+  .perm-card input { display: none; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    background: var(--surface);
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    vertical-align: middle;
+  }
+  tr:hover td { background: #f8fafc; }
+  tr:last-child td { border-bottom: none; }
+
+  /* Inputs */
+  .input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    background: white;
+  }
+  .input:focus { border-color: var(--blue); }
+
+  .btn-primary {
+    background: var(--blue);
+    color: white;
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    transition: all 0.2s;
+  }
+  .btn-ghost:hover { border-color: var(--muted); color: var(--text); }
+
+  /* Avatar */
+  .avatar {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: white;
+    border-radius: 12px;
+    padding: 14px 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 999;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    border-left: 4px solid var(--green);
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.error { border-left-color: var(--red); }
+
+  /* Stats bar */
+  .stat-chip {
+    display: flex;
+    flex-direction: column;
+    padding: 16px 24px;
+    border-right: 1px solid var(--border);
+  }
+  .stat-chip:last-child { border-right: none; }
+
+  /* Role selector tabs */
+  .role-tab {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+  }
+  .role-tab.selected-admin { background: #fef3c7; color: #92400e; border-color: #f59e0b; }
+  .role-tab.selected-empleado { background: #dbeafe; color: #1e40af; border-color: var(--blue); }
+  .role-tab.selected-viewer { background: #f0fdf4; color: #166534; border-color: #10b981; }
+  .role-tab:not([class*="selected"]) { background: var(--surface); color: var(--muted); }
+
+  /* Confirm delete */
+  .delete-confirm {
+    background: #fef2f2;
+    border: 1.5px solid #fecaca;
+    border-radius: 12px;
+    padding: 16px;
+    display: none;
+  }
+  .delete-confirm.show { display: block; }
+
+  /* Search */
+  .search-wrap { position: relative; }
+  .search-wrap i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 14px; }
+  .search-wrap input { padding-left: 40px; }
+
+  /* Responsive main */
+  .main-content { margin-left: 260px; padding: 32px; min-height: 100vh; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="px-6 py-6 border-b border-white/10">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-blue-500 flex items-center justify-center">
+        <i class="fas fa-shield-halved text-white text-sm"></i>
+      </div>
+      <div>
+        <div class="text-white font-bold text-sm leading-tight">Aguadilla</div>
+        <div class="text-white/40 text-xs">Admin Panel</div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="flex-1 py-4">
+    <div class="px-6 mb-2">
+      <span class="text-white/30 text-xs font-600 uppercase tracking-wider">Módulos</span>
+    </div>
+    <a href="dashboard1.html" class="nav-item">
+      <span class="icon"><i class="fas fa-chart-line"></i></span> Dashboard
+    </a>
+    <a href="reportes1.html" class="nav-item">
+      <span class="icon"><i class="fas fa-file-alt"></i></span> Reportes
+    </a>
+    <a href="mapa1.html" class="nav-item">
+      <span class="icon"><i class="fas fa-map-marked-alt"></i></span> Mapa GIS
+    </a>
+
+    <div class="px-6 mt-5 mb-2">
+      <span class="text-white/30 text-xs font-600 uppercase tracking-wider">Administración</span>
+    </div>
+    <a href="empleados.html" class="nav-item active">
+      <span class="icon"><i class="fas fa-users"></i></span> Empleados
+    </a>
+  </nav>
+
+  <div class="px-4 py-4 border-t border-white/10">
+    <div class="flex items-center gap-3 px-2">
+      <div class="avatar bg-blue-600 text-white">
+        <span id="sidebar-initials">--</span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="text-white text-sm font-semibold truncate" id="sidebar-name">Cargando...</div>
+        <div class="text-white/40 text-xs">Administrador</div>
+      </div>
+      <a href="login.html" class="text-white/40 hover:text-white text-sm">
+        <i class="fas fa-sign-out-alt"></i>
+      </a>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main-content">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Gestión de Empleados</h1>
+      <p class="text-slate-500 text-sm mt-1">Administra usuarios, roles y permisos de acceso</p>
+    </div>
+    <button onclick="openModal('create')" class="btn-primary">
+      <i class="fas fa-plus"></i> Nuevo Empleado
+    </button>
+  </div>
+
+  <!-- Stats row -->
+  <div class="card mb-6">
+    <div class="flex">
+      <div class="stat-chip">
+        <span class="text-2xl font-bold text-slate-900" id="stat-total">—</span>
+        <span class="text-xs text-slate-500 mt-1">Total empleados</span>
+      </div>
+      <div class="stat-chip">
+        <span class="text-2xl font-bold text-amber-600" id="stat-admins">—</span>
+        <span class="text-xs text-slate-500 mt-1">Administradores</span>
+      </div>
+      <div class="stat-chip">
+        <span class="text-2xl font-bold text-blue-600" id="stat-empleados">—</span>
+        <span class="text-xs text-slate-500 mt-1">Empleados</span>
+      </div>
+      <div class="stat-chip">
+        <span class="text-2xl font-bold text-green-600" id="stat-activos">—</span>
+        <span class="text-xs text-slate-500 mt-1">Activos hoy</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table card -->
+  <div class="card">
+    <!-- Toolbar -->
+    <div class="flex items-center justify-between p-5 border-b border-slate-100">
+      <div class="search-wrap w-72">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Buscar por nombre o email..." class="input" id="search-input" oninput="filterTable()">
+      </div>
+      <div class="flex gap-2">
+        <select class="input w-auto text-sm" id="filter-rol" onchange="filterTable()">
+          <option value="">Todos los roles</option>
+          <option value="admin">Administrador</option>
+          <option value="empleado">Empleado</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Empleado</th>
+            <th>Email</th>
+            <th>Rol</th>
+            <th>Acceso</th>
+            <th>Departamento</th>
+            <th>Creado</th>
+            <th style="width:120px">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="employees-table">
+          <tr>
+            <td colspan="7" class="text-center py-12 text-slate-400">
+              <i class="fas fa-spinner fa-spin text-2xl mb-3 block"></i>
+              Cargando empleados...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<!-- ===== MODAL: CREATE / EDIT ===== -->
+<div class="modal-overlay" id="modal-create">
+  <div class="modal">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h2 class="text-xl font-bold text-slate-900" id="modal-title">Nuevo Empleado</h2>
+        <p class="text-sm text-slate-500 mt-0.5">Completa la información del empleado</p>
+      </div>
+      <button onclick="closeModal('create')" class="w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <form id="create-form" onsubmit="submitEmployee(event)">
+      <!-- Role selector -->
+      <div class="mb-5">
+        <label class="block text-sm font-600 text-slate-700 mb-2">Rol <span class="text-red-400">*</span></label>
+        <div class="flex gap-2" id="role-tabs">
+          <div class="role-tab selected-admin" onclick="selectRole('admin')" id="tab-admin">
+            <i class="fas fa-crown mb-1 block"></i> Admin
+          </div>
+          <div class="role-tab" onclick="selectRole('empleado')" id="tab-empleado">
+            <i class="fas fa-user-tie mb-1 block"></i> Empleado
+          </div>
+        </div>
+        <input type="hidden" id="form-rol" value="admin">
+      </div>
+
+      <!-- Name fields -->
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div>
+          <label class="block text-sm font-600 text-slate-700 mb-1.5">Nombre <span class="text-red-400">*</span></label>
+          <input type="text" id="form-nombre" class="input" placeholder="Juan" required>
+        </div>
+        <div>
+          <label class="block text-sm font-600 text-slate-700 mb-1.5">Apellido <span class="text-red-400">*</span></label>
+          <input type="text" id="form-apellido" class="input" placeholder="García" required>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-600 text-slate-700 mb-1.5">Email <span class="text-red-400">*</span></label>
+        <input type="email" id="form-email" class="input" placeholder="juan@aguadilla.gov" required>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div>
+          <label class="block text-sm font-600 text-slate-700 mb-1.5">Teléfono</label>
+          <input type="tel" id="form-telefono" class="input" placeholder="787-XXX-XXXX">
+        </div>
+        <div>
+          <label class="block text-sm font-600 text-slate-700 mb-1.5">Departamento</label>
+          <select id="form-departamento" class="input">
+            <option value="General">General</option>
+            <option value="Obras Públicas">Obras Públicas</option>
+            <option value="Ambiente">Ambiente</option>
+            <option value="Control Animal">Control Animal</option>
+            <option value="Seguridad">Seguridad</option>
+            <option value="IT">IT</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mb-5">
+        <label class="block text-sm font-600 text-slate-700 mb-1.5">Contraseña temporal <span class="text-red-400">*</span></label>
+        <div class="relative">
+          <input type="password" id="form-password" class="input pr-10" placeholder="Mínimo 8 caracteres" required minlength="8">
+          <button type="button" onclick="togglePass()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+            <i class="fas fa-eye" id="eye-icon"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Permissions — hidden for admin, shown for empleado -->
+      <div id="perms-section" class="mb-5 hidden">
+        <label class="block text-sm font-600 text-slate-700 mb-2">
+          Módulos con acceso <span class="text-slate-400 font-normal">(selecciona los que aplican)</span>
+        </label>
+        <div class="flex flex-col gap-2">
+          <label class="perm-card" id="perm-dashboard" onclick="togglePerm(this)">
+            <input type="checkbox" value="dashboard" class="perm-check">
+            <div class="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-chart-line text-blue-600 text-sm"></i>
+            </div>
+            <div>
+              <div class="font-semibold text-sm text-slate-800">Dashboard</div>
+              <div class="text-xs text-slate-500">Estadísticas y métricas generales</div>
+            </div>
+          </label>
+          <label class="perm-card" id="perm-reportes" onclick="togglePerm(this)">
+            <input type="checkbox" value="reportes" class="perm-check">
+            <div class="w-9 h-9 rounded-xl bg-purple-100 flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-file-alt text-purple-600 text-sm"></i>
+            </div>
+            <div>
+              <div class="font-semibold text-sm text-slate-800">Reportes</div>
+              <div class="text-xs text-slate-500">Gestión de incidencias ciudadanas</div>
+            </div>
+          </label>
+          <label class="perm-card" id="perm-mapa" onclick="togglePerm(this)">
+            <input type="checkbox" value="mapa" class="perm-check">
+            <div class="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-map-marked-alt text-green-600 text-sm"></i>
+            </div>
+            <div>
+              <div class="font-semibold text-sm text-slate-800">Mapa GIS</div>
+              <div class="text-xs text-slate-500">Visualización geográfica de reportes</div>
+            </div>
+          </label>
+          <label class="perm-card" id="perm-empleados" onclick="togglePerm(this)">
+            <input type="checkbox" value="empleados" class="perm-check">
+            <div class="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-users text-amber-600 text-sm"></i>
+            </div>
+            <div>
+              <div class="font-semibold text-sm text-slate-800">Gestión Empleados</div>
+              <div class="text-xs text-slate-500">Crear y administrar usuarios</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Admin notice -->
+      <div id="admin-notice" class="mb-5 bg-amber-50 border border-amber-200 rounded-xl p-3 flex gap-3">
+        <i class="fas fa-crown text-amber-500 mt-0.5"></i>
+        <div class="text-sm">
+          <div class="font-semibold text-amber-800">Acceso completo</div>
+          <div class="text-amber-700">Los administradores tienen acceso a todos los módulos: Dashboard, Reportes, Mapa GIS y Empleados.</div>
+        </div>
+      </div>
+
+      <div id="form-error" class="mb-4 bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700 hidden"></div>
+
+      <div class="flex gap-3 justify-end">
+        <button type="button" class="btn-ghost" onclick="closeModal('create')">Cancelar</button>
+        <button type="submit" class="btn-primary" id="submit-btn">
+          <i class="fas fa-plus"></i> Crear Empleado
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== MODAL: DELETE CONFIRM ===== -->
+<div class="modal-overlay" id="modal-delete">
+  <div class="modal" style="max-width:420px">
+    <div class="text-center">
+      <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-trash-alt text-red-500 text-2xl"></i>
+      </div>
+      <h2 class="text-xl font-bold text-slate-900 mb-2">Eliminar Empleado</h2>
+      <p class="text-slate-500 text-sm mb-1">¿Estás seguro que deseas eliminar a</p>
+      <p class="font-bold text-slate-800 text-base mb-4" id="delete-name">—</p>
+      <p class="text-xs text-slate-400 mb-6">Esta acción no se puede deshacer. El empleado perderá acceso inmediatamente.</p>
+      <div class="flex gap-3">
+        <button class="btn-ghost flex-1" onclick="closeModal('delete')">Cancelar</button>
+        <button class="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 rounded-xl transition-all cursor-pointer border-none" onclick="confirmDelete()" id="confirm-delete-btn">
+          Sí, eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <i class="fas fa-check-circle text-green-500"></i>
+  <span id="toast-msg">Operación exitosa</span>
+</div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwf6zkn7u0PO3t9TPkVG2NjoDwRF7-BuSAtP4T0PXaDStulKQBJOXqzWFwm5Nqh6LP-jA/exec";
+
+let allEmployees = [];
+let deleteTarget = null;
+
+// ─── Auth check ───────────────────────────────────────────
+const session = JSON.parse(localStorage.getItem('user_session') || '{}');
+if (!session.email || session.rol !== 'admin') {
+  window.location.href = 'login.html';
+}
+document.getElementById('sidebar-name').textContent = session.nombre || 'Admin';
+document.getElementById('sidebar-initials').textContent = (session.nombre || 'A').charAt(0).toUpperCase();
+
+// ─── Load employees ───────────────────────────────────────
+async function loadEmployees() {
+  try {
+    const res = await fetch(SCRIPT_URL + '?action=getEmpleados&email=' + encodeURIComponent(session.email) + '&password=' + encodeURIComponent(session.password || ''));
+    const data = await res.json();
+
+    if (data.result === 'success') {
+      allEmployees = data.empleados || [];
+    } else {
+      // Fallback: try generic endpoint and filter
+      allEmployees = [];
+    }
+    renderTable(allEmployees);
+    updateStats(allEmployees);
+  } catch (e) {
+    console.error(e);
+    renderEmpty('Error al cargar. Verifica la conexión.');
+  }
+}
+
+function updateStats(list) {
+  document.getElementById('stat-total').textContent = list.length;
+  document.getElementById('stat-admins').textContent = list.filter(e => e.rol === 'admin').length;
+  document.getElementById('stat-empleados').textContent = list.filter(e => e.rol === 'empleado').length;
+  document.getElementById('stat-activos').textContent = list.length; // all considered active
+}
+
+const AVATAR_COLORS = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4'];
+function avatarColor(name) {
+  let h = 0; for (let c of (name||'')) h += c.charCodeAt(0);
+  return AVATAR_COLORS[h % AVATAR_COLORS.length];
+}
+
+function renderTable(list) {
+  const tbody = document.getElementById('employees-table');
+  if (!list.length) { renderEmpty('No se encontraron empleados.'); return; }
+
+  tbody.innerHTML = list.map((emp, idx) => {
+    const initials = ((emp.nombre||'')[0]||'') + ((emp.apellido||'')[0]||'');
+    const color = avatarColor(emp.nombre);
+    const rolBadge = emp.rol === 'admin'
+      ? `<span class="badge badge-admin"><i class="fas fa-crown"></i> Admin</span>`
+      : `<span class="badge badge-empleado"><i class="fas fa-user-tie"></i> Empleado</span>`;
+
+    const perms = emp.permisos ? emp.permisos.split(',') : [];
+    const permIcons = emp.rol === 'admin'
+      ? `<span class="text-xs text-slate-500">Acceso completo</span>`
+      : perms.map(p => {
+          const icons = { dashboard:'chart-line', reportes:'file-alt', mapa:'map-marked-alt', empleados:'users' };
+          return `<span class="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-slate-100 text-slate-600 text-xs" title="${p}"><i class="fas fa-${icons[p]||'circle'}"></i></span>`;
+        }).join('') || `<span class="text-xs text-slate-400">Sin permisos</span>`;
+
+    const fecha = emp.fecha_creacion ? new Date(emp.fecha_creacion).toLocaleDateString('es-PR', {year:'2-digit',month:'short',day:'numeric'}) : '—';
+
+    return `<tr>
+      <td>
+        <div class="flex items-center gap-3">
+          <div class="avatar text-white" style="background:${color}">${initials.toUpperCase()}</div>
+          <div>
+            <div class="font-semibold text-slate-800">${emp.nombre} ${emp.apellido}</div>
+            <div class="text-xs text-slate-400">${emp.telefono || '—'}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="mono text-xs text-slate-600">${emp.email}</span></td>
+      <td>${rolBadge}</td>
+      <td><div class="flex gap-1 flex-wrap">${permIcons}</div></td>
+      <td><span class="text-sm text-slate-600">${emp.departamento || '—'}</span></td>
+      <td><span class="text-sm text-slate-500">${fecha}</span></td>
+      <td>
+        <div class="flex gap-1">
+          <button onclick="openDeleteModal('${emp.email}','${emp.nombre} ${emp.apellido}')"
+            class="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 flex items-center justify-center transition-all cursor-pointer border-none"
+            title="Eliminar">
+            <i class="fas fa-trash-alt text-xs"></i>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function renderEmpty(msg) {
+  document.getElementById('employees-table').innerHTML = `
+    <tr><td colspan="7" class="text-center py-12 text-slate-400">
+      <i class="fas fa-users text-3xl mb-3 block opacity-30"></i>
+      ${msg}
+    </td></tr>`;
+}
+
+// ─── Filter ───────────────────────────────────────────────
+function filterTable() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const rol = document.getElementById('filter-rol').value;
+  const filtered = allEmployees.filter(e => {
+    const matchQ = !q || (e.nombre+' '+e.apellido+' '+e.email).toLowerCase().includes(q);
+    const matchRol = !rol || e.rol === rol;
+    return matchQ && matchRol;
+  });
+  renderTable(filtered);
+}
+
+// ─── Role tabs ────────────────────────────────────────────
+function selectRole(rol) {
+  document.getElementById('form-rol').value = rol;
+  ['admin','empleado'].forEach(r => {
+    const tab = document.getElementById('tab-'+r);
+    tab.className = 'role-tab';
+    if (r === rol) tab.className = `role-tab selected-${r}`;
+  });
+  document.getElementById('perms-section').classList.toggle('hidden', rol === 'admin');
+  document.getElementById('admin-notice').classList.toggle('hidden', rol !== 'admin');
+}
+
+function togglePerm(card) {
+  const cb = card.querySelector('input');
+  cb.checked = !cb.checked;
+  card.classList.toggle('checked', cb.checked);
+}
+
+// ─── Submit ───────────────────────────────────────────────
+async function submitEmployee(e) {
+  e.preventDefault();
+  const btn = document.getElementById('submit-btn');
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando...';
+  btn.disabled = true;
+
+  const rol = document.getElementById('form-rol').value;
+  const permisos = rol === 'admin'
+    ? 'dashboard,reportes,mapa,empleados'
+    : Array.from(document.querySelectorAll('.perm-check:checked')).map(c => c.value).join(',');
+
+  const payload = {
+    action: 'crearEmpleado',
+    nombre: document.getElementById('form-nombre').value.trim(),
+    apellido: document.getElementById('form-apellido').value.trim(),
+    email: document.getElementById('form-email').value.trim(),
+    password: document.getElementById('form-password').value,
+    telefono: document.getElementById('form-telefono').value.trim(),
+    departamento: document.getElementById('form-departamento').value,
+    rol,
+    permisos,
+    createdBy: session.email
+  };
+
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+
+    if (data.result === 'success') {
+      closeModal('create');
+      showToast('Empleado creado exitosamente', false);
+      loadEmployees();
+      document.getElementById('create-form').reset();
+      selectRole('admin');
+    } else if (data.result === 'exists') {
+      showError('Este correo ya está registrado en el sistema.');
+    } else {
+      showError(data.message || 'Error al crear el empleado.');
+    }
+  } catch(err) {
+    showError('Error de conexión. Intenta nuevamente.');
+  } finally {
+    btn.innerHTML = '<i class="fas fa-plus"></i> Crear Empleado';
+    btn.disabled = false;
+  }
+}
+
+// ─── Delete ───────────────────────────────────────────────
+function openDeleteModal(email, name) {
+  deleteTarget = email;
+  document.getElementById('delete-name').textContent = name;
+  openModal('delete');
+}
+
+async function confirmDelete() {
+  if (!deleteTarget) return;
+  const btn = document.getElementById('confirm-delete-btn');
+  btn.textContent = 'Eliminando...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'eliminarEmpleado', email: deleteTarget, adminEmail: session.email })
+    });
+    const data = await res.json();
+    if (data.result === 'success') {
+      closeModal('delete');
+      showToast('Empleado eliminado', false);
+      loadEmployees();
+    } else {
+      showToast(data.message || 'Error al eliminar', true);
+    }
+  } catch(e) {
+    showToast('Error de conexión', true);
+  } finally {
+    btn.textContent = 'Sí, eliminar';
+    btn.disabled = false;
+    deleteTarget = null;
+  }
+}
+
+// ─── Modal helpers ────────────────────────────────────────
+function openModal(id) {
+  document.getElementById('modal-'+id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById('modal-'+id).classList.remove('open');
+  document.getElementById('form-error').classList.add('hidden');
+}
+
+function showError(msg) {
+  const el = document.getElementById('form-error');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+// ─── Toast ────────────────────────────────────────────────
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '');
+  t.querySelector('i').className = isError ? 'fas fa-exclamation-circle text-red-500' : 'fas fa-check-circle text-green-500';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ─── Password toggle ──────────────────────────────────────
+function togglePass() {
+  const inp = document.getElementById('form-password');
+  const ico = document.getElementById('eye-icon');
+  if (inp.type === 'password') { inp.type = 'text'; ico.className = 'fas fa-eye-slash'; }
+  else { inp.type = 'password'; ico.className = 'fas fa-eye'; }
+}
+
+// ─── Init ─────────────────────────────────────────────────
+loadEmployees();
+</script>
+</body>
+</html>
