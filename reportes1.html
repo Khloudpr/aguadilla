@@ -580,7 +580,7 @@ function showReporteDetail(id) {
     
     // Get foto URL - handle multiple comma-separated URLs
     const fotoRaw = reporte.foto_url || reporte.Foto_URL || reporte['Foto_URL'] || reporte.foto || '';
-    const fotoUrls = fotoRaw ? fotoRaw.split(',').map(u => u.trim()).filter(u => u.length > 0) : [];
+    const fotoUrls = fotoRaw ? fotoRaw.split('|||').map(u => u.trim()).filter(u => u.length > 0) : [];
     const fotoUrl = fotoUrls[0] || ''; // first photo for backward compat
 
     const content = `
