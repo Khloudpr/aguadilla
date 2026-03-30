@@ -203,8 +203,8 @@
         <div class="text-center mt-6">
             <p class="text-white/60 text-sm">
                 ¿Necesitas ayuda? Contacta a 
-                <a href="mailto:soporte@aguadilla.pr.gov" class="text-white font-bold hover:underline">
-                    soporte@aguadilla.pr.gov
+                <a href="/cdn-cgi/l/email-protection#4c3f233c233e38290c2d2b392d282520202d623c3e622b233a" class="text-white font-bold hover:underline">
+                    <span class="__cf_email__" data-cfemail="16657966796462735677716377727f7a7a7738666438717960">[email&#160;protected]</span>
                 </a>
             </p>
         </div>
@@ -247,7 +247,7 @@
         </div>
     </div>
 
-    <script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwf6zkn7u0PO3t9TPkVG2NjoDwRF7-BuSAtP4T0PXaDStulKQBJOXqzWFwm5Nqh6LP-jA/exec";
 
         // Toggle Password Visibility
@@ -333,7 +333,7 @@
 
                     // Redirect to dashboard
                     setTimeout(() => {
-                        window.location.href = 'dashboard1.html';
+                        window.location.href = 'hub.html';
                     }, 1000);
 
                 } else {
@@ -375,12 +375,4 @@
             const session = localStorage.getItem('user_session');
             if (session) {
                 const data = JSON.parse(session);
-                if (data.email && (data.rol === 'empleado' || data.rol === 'admin')) {
-                    // Already logged in, redirect
-                    window.location.href = 'dashboard1.html';
-                }
-            }
-        };
-    </script>
-</body>
-</html>
+                if (
