@@ -252,6 +252,9 @@
                     <a href="consulta.html" class="bg-white/10 backdrop-blur text-white px-8 py-4 rounded-full font-black text-lg hover:bg-white/20 transition border-2 border-white/30 flex items-center gap-3">
                         <i class="fas fa-search"></i> Consulta tu Reporte
                     </a>
+                    <button id="install-btn" onclick="instalarApp()" class="hidden bg-white/10 backdrop-blur text-white px-8 py-4 rounded-full font-black text-lg hover:bg-white/20 transition border-2 border-green-400/50 flex items-center gap-3">
+                        <i class="fas fa-download"></i> Instalar App
+                    </button>
                     <a href="aguadilla-reporta-completo.html" class="btn-glow bg-white text-blue-900 px-8 py-4 rounded-full font-black text-lg hover:bg-blue-50 transition shadow-2xl flex items-center gap-3 group">
                         <i class="fas fa-flag text-2xl"></i>
                         Reportar Incidencia
@@ -702,12 +705,42 @@
         });
     </script>
     <script>
-        // Register Service Worker
+        // Register Service Worker + PWA Install
+        let deferredPrompt = null;
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
                     .then(reg => console.log('SW registered:', reg.scope))
                     .catch(err => console.log('SW error:', err));
+            });
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // Show install button
+            const btn = document.getElementById('install-btn');
+            if (btn) btn.classList.remove('hidden');
+        });
+
+        window.addEventListener('appinstalled', () => {
+            deferredPrompt = null;
+            const btn = document.getElementById('install-btn');
+            if (btn) btn.classList.add('hidden');
+        });
+
+        function instalarApp() {
+            if (!deferredPrompt) {
+                // iOS fallback
+                alert('Para instalar:\n\niPhone/iPad: Toca el botón Compartir → "Añadir a pantalla de inicio"\n\nAndroid: Menú ⋮ → "Añadir a pantalla de inicio"');
+                return;
+            }
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(choice => {
+                deferredPrompt = null;
+                const btn = document.getElementById('install-btn');
+                if (btn) btn.classList.add('hidden');
             });
         }
     </script>
