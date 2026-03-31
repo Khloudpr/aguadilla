@@ -217,20 +217,23 @@ if (session.rol === 'admin') {
   accessibleModules = new Set(perms);
 }
 
-// Render modules
+// Render modules — only show accessible ones
 const grid = document.getElementById('modules-grid');
-grid.innerHTML = MODULES.map((mod, i) => {
-  const hasAccess = accessibleModules.has(mod.id);
+const visibleModules = MODULES.filter(mod => {
+  if (session.rol === 'admin') return true;
+  if (mod.id === 'empleados') return false;
+  return accessibleModules.has(mod.id);
+});
+grid.innerHTML = visibleModules.map((mod, i) => {
   return `
-    <a href="${hasAccess ? mod.url : '#'}"
-       class="module-card fade-up ${!hasAccess ? 'locked' : ''}"
-       style="--card-color:${mod.color};opacity:0"
-       ${!hasAccess ? 'title="No tienes acceso a este módulo"' : ''}>
+    <a href="${mod.url}"
+       class="module-card fade-up"
+       style="--card-color:${mod.color};opacity:0">
       <div class="flex items-center justify-between">
         <div class="module-icon" style="background:${mod.bg}">
           <i class="fas ${mod.icon}" style="color:${mod.color}"></i>
         </div>
-        ${!hasAccess ? '<span class="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded-full"><i class="fas fa-lock mr-1"></i>Sin acceso</span>' : '<i class="fas fa-arrow-right text-slate-300 text-sm"></i>'}
+        <i class="fas fa-arrow-right text-slate-300 text-sm"></i>
       </div>
       <div>
         <div class="font-black text-slate-900 text-lg">${mod.title}</div>

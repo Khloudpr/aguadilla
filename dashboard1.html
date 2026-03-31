@@ -353,7 +353,18 @@ let allReportes=[],filteredReportes=[],currentPeriod=7,chartEstatus,chartCategor
 
 window.onload=()=>{verificarSesion();fetchDashboardData();setupFilters();setupKeyboardShortcuts();loadNotifications();updateRecentActivity()};
 
-function verificarSesion(){const s=JSON.parse(localStorage.getItem('user_session')||'null');if(!s||!s.email||s.rol!=='empleado'&&s.rol!=='admin'){window.location.href='index.html';return}document.getElementById('user-name').textContent=`${s.nombre} ${s.apellido}`;document.getElementById('user-email').textContent=s.email;if(s.rol==='admin'){const el=document.getElementById('link-empleados');if(el)el.style.display='flex';}}
+
+        // Permission check
+        (function() {
+            const s = JSON.parse(localStorage.getItem('user_session') || '{}');
+            if (!s.email) { window.location.href = 'login.html'; return; }
+            if (s.rol === 'admin') return; // admin has full access
+            const perms = (s.permisos || '').split(',').map(p => p.trim());
+            if (!perms.includes('dashboard')) {
+                window.location.href = 'hub.html';
+            }
+        })();
+        function verificarSesion(){const s=JSON.parse(localStorage.getItem('user_session')||'null');if(!s||!s.email||s.rol!=='empleado'&&s.rol!=='admin'){window.location.href='index.html';return}document.getElementById('user-name').textContent=`${s.nombre} ${s.apellido}`;document.getElementById('user-email').textContent=s.email;if(s.rol==='admin'){const el=document.getElementById('link-empleados');if(el)el.style.display='flex';}}
 
 function cerrarSesion(){if(confirm('¿Estás seguro que deseas cerrar sesión?')){localStorage.removeItem('user_session');window.location.href='index.html'}}
 

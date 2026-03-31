@@ -43,8 +43,6 @@
         .quick-btn{width:56px;height:56px;border-radius:50%;background:#1e3a8a;color:white;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(30,58,138,0.4);cursor:pointer;transition:all 0.3s}
         .quick-btn:hover{transform:scale(1.1);box-shadow:0 6px 20px rgba(30,58,138,0.6)}
         body.focus-mode .sidebar,body.focus-mode .quick-actions,body.focus-mode header{opacity:0.3;pointer-events:none}
-        /* Keep the focus button always reachable */
-        body.focus-mode #btn-focus{opacity:1;pointer-events:auto;position:relative;z-index:200}
         .breadcrumb{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em}
         .breadcrumb a{color:#64748b;transition:color 0.2s}
         .breadcrumb a:hover{color:#1e3a8a}
@@ -206,7 +204,7 @@
                     <button onclick="toggleHeatmap()" id="btn-heatmap" class="bg-white text-slate-700 px-4 py-2 rounded-xl shadow-md hover:shadow-lg transition text-xs font-black uppercase" title="Heatmap (H)">
                         <i class="fas fa-fire mr-2"></i><span class="hidden sm:inline">Heatmap</span>
                     </button>
-                    <button onclick="toggleFocusMode()" id="btn-focus" class="bg-white text-slate-700 px-4 py-2 rounded-xl shadow-md hover:shadow-lg transition text-xs font-black uppercase" title="Focus (F)">
+                    <button onclick="toggleFocusMode()" class="bg-white text-slate-700 px-4 py-2 rounded-xl shadow-md hover:shadow-lg transition text-xs font-black uppercase" title="Focus (F)">
                         <i class="fas fa-eye mr-2"></i><span class="hidden sm:inline">Focus</span>
                     </button>
                     <button onclick="exportarCSV()" class="bg-white text-slate-700 px-4 py-2 rounded-xl shadow-md hover:shadow-lg transition text-xs font-black uppercase" title="Exportar (E)">
@@ -276,13 +274,24 @@ let cacheReportes=[],map,markersCluster,heatLayer,heatmapActive=false,currentFil
 
 window.onload=()=>{verificarSesion();initMap();setupKeyboardShortcuts();updateRecentActivity()};
 
-function verificarSesion(){const s=JSON.parse(localStorage.getItem('user_session')||'null');if(!s||!s.email||s.rol!=='empleado'&&s.rol!=='admin'){window.location.href='index.html';return}document.getElementById('user-name').textContent=`${s.nombre} ${s.apellido}`;document.getElementById('user-email').textContent=s.email}
+
+        // Permission check
+        (function() {
+            const s = JSON.parse(localStorage.getItem('user_session') || '{}');
+            if (!s.email) { window.location.href = 'login.html'; return; }
+            if (s.rol === 'admin') return; // admin has full access
+            const perms = (s.permisos || '').split(',').map(p => p.trim());
+            if (!perms.includes('mapa')) {
+                window.location.href = 'hub.html';
+            }
+        })();
+        function verificarSesion(){const s=JSON.parse(localStorage.getItem('user_session')||'null');if(!s||!s.email||s.rol!=='empleado'&&s.rol!=='admin'){window.location.href='index.html';return}document.getElementById('user-name').textContent=`${s.nombre} ${s.apellido}`;document.getElementById('user-email').textContent=s.email}
 
 function cerrarSesion(){if(confirm('¿Cerrar sesión?')){localStorage.removeItem('user_session');window.location.href='index.html'}}
 
 function toggleMobileMenu(){const sidebar=document.getElementById('sidebar'),overlay=document.getElementById('mobile-overlay');sidebar.classList.toggle('-translate-x-full');sidebar.classList.toggle('translate-x-0');overlay.classList.toggle('opacity-0');overlay.classList.toggle('pointer-events-none');overlay.classList.toggle('opacity-100');overlay.classList.toggle('pointer-events-auto')}
 
-function setupKeyboardShortcuts(){document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;switch(e.key.toLowerCase()){case'g':window.location.href='dashboard1.html';break;case'r':window.location.href='reportes1.html';break;case'm':window.location.href='mapa1.html';break;case'/':e.preventDefault();openCommandPalette();break;case'f':toggleFocusMode();break;case'h':toggleHeatmap();break;case'e':exportarCSV();break;case'?':showShortcuts();break;case'escape':if(focusMode){toggleFocusMode();return;}closeModal();closeCommandPalette();break}})}
+function setupKeyboardShortcuts(){document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;switch(e.key.toLowerCase()){case'g':window.location.href='dashboard1.html';break;case'r':window.location.href='reportes1.html';break;case'm':window.location.href='mapa1.html';break;case'/':e.preventDefault();openCommandPalette();break;case'f':toggleFocusMode();break;case'h':toggleHeatmap();break;case'e':exportarCSV();break;case'?':showShortcuts();break;case'escape':closeModal();closeCommandPalette();break}})}
 
 function showShortcuts(){document.getElementById('shortcuts-help').classList.add('active')}
 function closeShortcuts(){document.getElementById('shortcuts-help').classList.remove('active')}
@@ -300,20 +309,7 @@ function updateCommandResults(query){if(!query){const html=`
 <div onclick="exportarCSV();closeCommandPalette()" class="p-4 hover:bg-slate-50 cursor-pointer flex items-center gap-3 border-b"><i class="fas fa-download text-blue-900"></i><span class="font-bold text-sm">Exportar CSV</span></div>
 `;document.getElementById('command-results').innerHTML=html;return}const matches=cacheReportes.filter(r=>r.id_reporte.toLowerCase().includes(query.toLowerCase())||(r.categoría&&r.categoría.toLowerCase().includes(query.toLowerCase()))||(r.ubicación&&r.ubicación.toLowerCase().includes(query.toLowerCase())));const html=matches.slice(0,8).map(r=>`<div onclick="zoomToReporte('${r.id_reporte}');closeCommandPalette()" class="p-4 hover:bg-slate-50 cursor-pointer border-b"><div class="font-black text-sm text-blue-900">${r.id_reporte}</div><div class="text-xs text-slate-600">${r.categoría||'Sin categoría'} • ${r.ubicación||'Sin ubicación'}</div></div>`).join('')||'<div class="p-4 text-center text-slate-400">No se encontraron resultados</div>';document.getElementById('command-results').innerHTML=html}
 
-function toggleFocusMode(){
-    focusMode=!focusMode;
-    document.body.classList.toggle('focus-mode');
-    const btn=document.getElementById('btn-focus');
-    if(focusMode){
-        btn.classList.remove('bg-white','text-slate-700');
-        btn.classList.add('bg-blue-900','text-white');
-        btn.innerHTML='<i class="fas fa-eye-slash mr-2"></i><span class="hidden sm:inline">Exit Focus</span>';
-    } else {
-        btn.classList.remove('bg-blue-900','text-white');
-        btn.classList.add('bg-white','text-slate-700');
-        btn.innerHTML='<i class="fas fa-eye mr-2"></i><span class="hidden sm:inline">Focus</span>';
-    }
-}
+function toggleFocusMode(){focusMode=!focusMode;document.body.classList.toggle('focus-mode')}
 
 function updateRecentActivity(){const activity=(localStorage.getItem('recent_activity')||'').split(',').filter(Boolean).slice(0,3),html=activity.map(id=>`<div class="text-blue-300 hover:text-white cursor-pointer" onclick="zoomToReporte('${id}')"><i class="fas fa-file-alt mr-2 text-[10px]"></i>${id}</div>`).join('');document.getElementById('recent-activity').innerHTML=html||'<p class="text-blue-400 text-[10px]">Sin actividad</p>'}
 
